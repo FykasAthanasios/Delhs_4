@@ -63,5 +63,7 @@ int main(int argc, char *argv[])
       }
    }
 
+   filesys_initilization(dirA, dirB);
+
    return 0;
 }
