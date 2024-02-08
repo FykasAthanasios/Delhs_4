@@ -3,6 +3,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+static char *parent1_dir;
+static char *parent2_dir;
+
+
 void filesys_initilization(char *parent1_directory, char *parent2_directory)
 {
    int size1 = strlen(parent1_directory) + 2;

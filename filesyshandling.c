@@ -6,6 +6,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+static char *parent1_dir;
+static char *parent2_dir;
+
 void initilization(char *parent1_directory, char *parent2_directory)
 {
    int size1 = strlen(parent1_directory) + 1;
