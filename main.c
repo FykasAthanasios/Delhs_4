@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "filesyshandling.h"
+#include "filesyscomp.h"
 
 int main(int argc, char *argv[])
 {
@@ -62,9 +62,6 @@ int main(int argc, char *argv[])
          return EXIT_FAILURE;
       }
    }
-
-   initilization(dirA, dirB);
-   printf("%d\n", compare_file("aba", "aba"));
 
    return 0;
 }
