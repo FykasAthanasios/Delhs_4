@@ -100,7 +100,6 @@ void print_differences_and_merge(char *result_parent)
       struct dirent *d1;
       while((d1 = readdir(dir1)) != NULL)
       {
-         //NOTE MAYBE ADD A LIST OF THE FILES THAT ARE THE SAME SO WE DONT SEARCH IT AGAIN FOR THE SECOND DIRECTORY
          if(d1->d_type == d2->d_type)
          {
             if(d2->d_type == DT_REG && compare_file(d1->d_name, d2->d_name))
