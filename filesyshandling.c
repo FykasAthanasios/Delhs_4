@@ -6,6 +6,15 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#define CALL_OR_DIE(f_call, error_message, Type, error_value)      \
+({                                                                 \
+   Type value =  f_call;                                           \
+   if(value == error_value){                                       \
+      perror(error_message); exit(EXIT_FAILURE);                   \
+   }                                                               \
+   value;                                                          \
+})
+
 static char *parent1_dir;
 static char *parent2_dir;
 
@@ -47,38 +56,17 @@ bool compare_file(char* path1, char* path2)
 
    struct stat stat1, stat2;
 
-   if(stat(real_path1, &stat1) == -1)
-   {
-      perror("stat error");
-      exit(EXIT_FAILURE);
-   }
-
-   if(stat(real_path2, &stat2) == -1)
-   {
-      perror("stat error");
-      exit(EXIT_FAILURE);
-   }
+   CALL_OR_DIE(stat(real_path1, &stat1), "stat error", int, -1);
+   CALL_OR_DIE(stat(real_path2, &stat2), "stat error", int, -1);
 
    if(stat1.st_size != stat2.st_size)
    {
       return false;
    }
 
-   int fid1 = open(real_path1, O_RDONLY | O_NONBLOCK);
+   int fid1 = CALL_OR_DIE(open(real_path1, O_RDONLY | O_NONBLOCK), "open error", int, -1);
 
-   if(fid1 == -1)
-   {
-      perror("open failed");
-      exit(EXIT_FAILURE);
-   }
-
-   int fid2 = open(real_path2, O_RDONLY | O_NONBLOCK);
-
-   if(fid2 == -1)
-   {
-      perror("open failed");
-      exit(EXIT_FAILURE);
-   }
+   int fid2 = CALL_OR_DIE(open(real_path2, O_RDONLY | O_NONBLOCK), "open error", int, -1);
 
    char byte1, byte2;
 
