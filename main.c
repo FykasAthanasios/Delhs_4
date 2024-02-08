@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "filesyshandling.h"
 
 int main(int argc, char *argv[])
 {
    char *dirA = NULL, *dirB = NULL,  *dirC = NULL;
-   
+
    if(argc != 4 && argc != 6)
    {
       printf("Wrong number of arguments\n");
@@ -61,6 +62,9 @@ int main(int argc, char *argv[])
          return EXIT_FAILURE;
       }
    }
+
+   initilization(dirA, dirB);
+   printf("%d\n", compare_file("aba", "aba"));
 
    return 0;
 }

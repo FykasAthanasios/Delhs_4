@@ -10,11 +10,11 @@ clear:
 .obj_dir:
 	mkdir -p obj
 
-.main:
-	$(CC) main.c -o cmpcat
+.main: .filesyshandling.o
+	$(CC) obj/filesyshandling.o main.c -o cmpcat
 
 .filesyshandling.o: filesyshandling.h filesyshandling.c
-	$(CC) -c filesyshandling.c obj/filesyshandling.o
+	$(CC) -c filesyshandling.c -o obj/filesyshandling.o
 
 .filesyscomp.o: filesyscomp.h filesyscomp.c
-	$(CC) -c filesyscomp.c obj/filesyscomp.o
+	$(CC) -c filesyscomp.c -o obj/filesyscomp.o
