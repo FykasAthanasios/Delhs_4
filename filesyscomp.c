@@ -30,7 +30,7 @@ void traverse_differences(char *path, char *result_parent)
    struct dirent *d;
    int path_len = strlen(path) + 1 + 32;
    char *new_path = malloc(path_len * sizeof(char));
-   char *new_result_path;
+   char *new_result_path = NULL;
    int result_path_len;
 
    if(result_parent != NULL)
@@ -63,6 +63,10 @@ void traverse_differences(char *path, char *result_parent)
          printf("\t%s\n", new_path);
       }
    }
+
+   free(new_path);
+   if(new_result_path != NULL)
+      free(new_result_path);
 }
 
 void print_differences_and_merge(char *parent1_dir, char *parent2_dir, char *result_parent)
