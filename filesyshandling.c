@@ -23,6 +23,12 @@ char *add_to_path(char *current_path, char *new, int *current_size, char *result
          result = malloc(sizeof(char) * (size));
       }
    }
+
+   if(result == NULL)
+   {
+      (*current_size) = size;
+      result = malloc(sizeof(char) * (size));
+   }
    
    strcpy(result, current_path);
    strcat(result, "/");

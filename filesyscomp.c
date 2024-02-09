@@ -1,5 +1,8 @@
 #include "filesyscomp.h"
 #include "filesyshandling.h"
+
+#define _DEFAULT_SOURCE
+
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -8,44 +11,38 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <errno.h>
-
-static char *parent1_dir;
-static char *parent2_dir;
-
-#define CALL_OR_DIE(f_call, error_message, Type, error_value)      \
-({                                                                 \
-   Type value =  f_call;                                           \
-   if(value == error_value){                                       \
-      perror(error_message); exit(EXIT_FAILURE);                   \
-   }                                                               \
-   value;                                                          \
-})
+#include <fcntl.h>
 
 
-void filesys_initilization(char *parent1_directory, char *parent2_directory)
+void traverse_differences(char *path, char *result_parent)
 {
-   int size1 = strlen(parent1_directory) + 2;
-   int size2 = strlen(parent2_directory) + 2;
+   DIR* direct = CALL_OR_DIE(opendir(path), "opendir error", DIR*, NULL);
 
-   parent1_dir = malloc(size1 * sizeof(char));
-   parent2_dir = malloc(size2 * sizeof(char));
+   struct dirent *d;
+   int path_len = strlen(path) + 1 + 32;
+   int result_path_len = strlen(result_path_len) + 1 + 32;
+   char *new_path = malloc(path_len * sizeof(char));
+   char *new_result_path = malloc(result_path_len * sizeof(char));
 
-   strcpy(parent1_dir, parent1_directory);
-   strcpy(parent2_dir, parent2_directory);
-
-   parent1_dir[size1 - 1] = '\0';
-   parent2_dir[size2 - 1] = '\0';
-   parent1_dir[size1 - 2] = '/';
-   parent2_dir[size2 - 2] = '/';
-
-   initilization(parent1_dir, parent2_dir);
+   while((d = readdir(direct)) != NULL)
+   {
+      new_path = add_to_path(path, d->d_name, &path_len, new_path);
+      new_result_path = add_to_path(result_parent, d->d_name, &result_path_len, new_result_path);
+      if(d->d_type == DT_DIR)
+      {
+         CALL_OR_DIE(mkdir(new_result_path, S_IRWXU), "mkdir error", int, -1);
+         printf("\t%s\n", new_path);
+         traverse_differences(new_path, new_result_path);
+      }
+      else if(d->d_type == DT_REG)
+      {
+         CALL_OR_DIE(create(new_result_path, S_IRWXU), "create error", int, -1);
+         printf("\t%s\n", new_path);
+      }
+   }
 }
 
-void print_differences_and_merge_rec(char *parent1, char *parent2, char *result_parent)
-{
-}
-
-void print_differences_and_merge(char *result_parent)
+void print_differences_and_merge(char *parent1_dir, char *parent2_dir, char *result_parent)
 {
    if(result_parent != NULL)
    {
@@ -69,12 +66,12 @@ void print_differences_and_merge(char *result_parent)
          //NOTE MAYBE ADD A LIST OF THE FILES THAT ARE THE SAME SO WE DONT SEARCH IT AGAIN FOR THE SECOND DIRECTORY
          if(d1->d_type == d2->d_type)
          {
-            if(d1->d_type == DT_REG && compare_file(d1->d_name, d2->d_name))
+            if(d1->d_type == DT_REG && same_file(d1->d_name, d2->d_name, parent1_dir, parent2_dir))
             {
                found = true;
                break;
             }
-            else if(d1->d_type == DT_DIR && compare_dir(d1->d_name, d2->d_name))
+            else if(d1->d_type == DT_DIR && same_dir(d1->d_name, d2->d_name))
             {
                //NOTE ADD RECURSIVE CALL FOR THIS DIRECTORY
                found = true;
@@ -84,7 +81,7 @@ void print_differences_and_merge(char *result_parent)
       }
       if(found == false)
       {
-         printf("%s\n", d1->d_name);
+         
       }
 
       found = false;
@@ -102,12 +99,12 @@ void print_differences_and_merge(char *result_parent)
       {
          if(d1->d_type == d2->d_type)
          {
-            if(d2->d_type == DT_REG && compare_file(d1->d_name, d2->d_name))
+            if(d2->d_type == DT_REG && same_file(d1->d_name, d2->d_name, parent1_dir, parent2_dir))
             {
                found = true;
                break;
             }
-            else if(d2->d_type == DT_DIR && compare_dir(d1->d_name, d2->d_name))
+            else if(d2->d_type == DT_DIR && same_dir(d1->d_name, d2->d_name))
             {
                //NOTE ADD RECURSIVE CALL FOR THIS DIRECTORY
                found = true;
@@ -118,7 +115,7 @@ void print_differences_and_merge(char *result_parent)
       if(found == false)
       {
          //NOTE add file to tha result file system
-         printf("%s\n", d1->d_name);
+         
       }
 
       found = false;
