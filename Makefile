@@ -7,6 +7,9 @@ clear:
 	rm -f *.o
 	rm -f cmpcat
 
+clear_created_dir:
+	rm -rf dirC
+
 .obj_dir:
 	mkdir -p obj
 

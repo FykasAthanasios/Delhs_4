@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
       }
    }
 
-   filesys_initilization(dirA, dirB);
+   print_differences_and_merge(dirA, dirB, dirC);
 
    return 0;
 }
