@@ -19,7 +19,7 @@ char *add_to_path(char *current_path, char *new, int *current_size, char *result
       if((*current_size) < size)
       {
          (*current_size) = size;
-         free(result);
+         if(result != NULL) free(result);
          result = malloc(sizeof(char) * (size));
       }
    }
