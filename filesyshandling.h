@@ -19,6 +19,13 @@
  *if current_size != NULL but result == NULL it still creates a new space for the result and set the current_size to the correct value
  */
 char *add_to_path(char *current_path, char *new, int *current_size, char *result);
+void free_path(char *path);
+
+int my_mkdir(char *path, mode_t mode);
+
+int my_creat(char *path, mode_t mode);
+
+void copy_file(char *path, char *new_path);
 
 bool same_dir(char* name1, char* name2);
 bool same_file(char* name1, char* name2, char* path1, char* path2);

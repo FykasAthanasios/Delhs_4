@@ -8,6 +8,10 @@
 
 char *add_to_path(char *current_path, char *new, int *current_size, char *result)
 {
+   if(current_path == NULL)
+   {
+      return NULL;
+   }
    int size = strlen(current_path) + 1 + strlen(new) + 1; // current_path + / + new + \0
 
    if(current_size == NULL)
@@ -35,6 +39,42 @@ char *add_to_path(char *current_path, char *new, int *current_size, char *result
    strcat(result, new);
 
    return result;
+}
+
+void free_path(char *path)
+{
+   if(path != NULL)
+      free(path);
+}
+
+int my_mkdir(char *path, mode_t mode)
+{
+   if(path != NULL)
+   {
+      return mkdir(path, mode);
+   }
+   return 0;
+}
+
+int my_creat(char *path, mode_t mode)
+{
+   if(path != NULL)
+   {
+      return creat(path, mode);
+   }
+   return 0;
+}
+
+void copy_file(char *path, char *new_path)
+{
+   if(new_path == NULL)
+   {
+      return;
+   }
+
+   CALL_OR_DIE(my_creat(new_path, S_IRWXU), "create error", int, -1);
+
+   
 }
 
 bool same_dir(char* name1, char* name2)
