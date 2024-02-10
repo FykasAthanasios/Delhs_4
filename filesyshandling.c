@@ -231,27 +231,22 @@ bool same_link(char* name1, char* name2, char* path1, char* path2)
     }
 
     struct stat statbuf;
+    if( is_link_target_a_link(target1) == true , is_link_target_a_link(target2) == true) 
+    {
+        char* tempname1=malloc(sizeof(char)*20);
+            char* tempname2=malloc(sizeof(char)*20);
+            getLastPathComponent(target1, tempname1, 20);
+            getLastPathComponent(target2, tempname2, 20);
+            if(same_link( tempname1 , tempname2, target1, target2) == true) return true;
+
+    }
+    
 
     //Check if both links , look to a link, and call the same function rec with the new paths
     
     printf("%s\n",target2);
     if (strcmp(target1, target2) == 0) {
-        if( is_link_target_a_link(target1) == true , is_link_target_a_link(target2) == true) 
-        {
-            //Assuming the maximum characters for a file name is 20
-            char* tempname1=malloc(sizeof(char)*20);
-            char* tempname2=malloc(sizeof(char)*20);
-            getLastPathComponent(target1, tempname1, 20);
-            getLastPathComponent(target2, tempname2, 20);
-            if(same_link( tempname1 , tempname2, target1, target2) == false)
-            {   
-                free(tempname1);
-                free(tempname2);
-                return false;
-            }
-            free(tempname1);
-            free(tempname2);
-        }
+        
         free(target1);
         free(target2);
         
