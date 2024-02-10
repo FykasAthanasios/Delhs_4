@@ -1,8 +1,5 @@
 #include "filesyscomp.h"
 #include "filesyshandling.h"
-
-#define _DEFAULT_SOURCE
-
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>

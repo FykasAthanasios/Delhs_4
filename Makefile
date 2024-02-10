@@ -1,4 +1,5 @@
 CC = gcc
+Flags = -std=c11 -D_DEFAULT_SOURCE -Wall
 
 targe: .obj_dir .main
 
@@ -14,10 +15,10 @@ clear_created_dir:
 	mkdir -p obj
 
 .main: .filesyscomp.o
-	$(CC) obj/*.o main.c -o cmpcat
+	$(CC) $(Flags) obj/*.o main.c -o cmpcat
 
 .filesyshandling.o: filesyshandling.h filesyshandling.c
-	$(CC) -c filesyshandling.c -o obj/filesyshandling.o
+	$(CC) $(Flags) -c filesyshandling.c -o obj/filesyshandling.o
 
 .filesyscomp.o: filesyscomp.h filesyscomp.c .filesyshandling.o
-	$(CC) -c filesyscomp.c -o obj/filesyscomp.o
+	$(CC) $(Flags) -c filesyscomp.c -o obj/filesyscomp.o

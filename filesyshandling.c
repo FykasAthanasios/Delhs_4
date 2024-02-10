@@ -166,7 +166,7 @@ bool same_file(char* name, char* path1, char* path2)
    return true;
 }
 
-bool file1_modif_bigger_file2_modif(char *name1, char *name2, char *path1, char *path2)
+bool file1_modif_less_file2_modif(char *name1, char *name2, char *path1, char *path2)
 {
    char *real_path1 = add_to_path(path1, name1, NULL, NULL);
    char *real_path2 = add_to_path(path2, name2, NULL, NULL);

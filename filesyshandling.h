@@ -2,6 +2,7 @@
 #define FILESYHANDLING_H
 
 #include <stdbool.h>
+#include <sys/types.h>
 
 #define CALL_OR_DIE(f_call, error_message, Type, error_value)      \
 ({                                                                 \
