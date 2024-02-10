@@ -25,9 +25,11 @@ int my_mkdir(char *path, mode_t mode);
 
 int my_creat(char *path, mode_t mode);
 
-void copy_file(char *path, char *new_path);
+void copy_file_or_hard_link(char *path, char *new_path);
 
 bool same_dir(char* name1, char* name2);
-bool same_file(char* name1, char* name2, char* path1, char* path2);
+//compare files with the same name
+bool same_file(char* name, char* path1, char* path2);
+bool file1_modif_less_file2_modif(char *name1, char *name2, char *path1, char *path2);
 
 #endif

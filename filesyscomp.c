@@ -15,7 +15,7 @@
 
 bool check_to_ignore_dir(char *name)
 {
-   if(strcmp(name, ".") == 0  || strcmp(name, "..") == 0)
+   if(name[0] == '.'  || strcmp(name, "..") == 0)
    {
       return true;
    }
@@ -29,14 +29,14 @@ void traverse_differences(char *path, char *result_parent)
 
    struct dirent *d;
    int path_len = strlen(path) + 1 + 32;
-   char *new_path = malloc(path_len * sizeof(char));
+   char *new_path = CALL_OR_DIE(malloc(path_len * sizeof(char)), "malloc error", void *, NULL);
    char *new_result_path = NULL;
    int result_path_len;
 
    if(result_parent != NULL)
    {
       result_path_len = strlen(result_parent) + 1 + 32;
-      new_result_path = malloc(result_path_len * sizeof(char));
+      new_result_path = CALL_OR_DIE(malloc(result_path_len * sizeof(char)), "malloc error", void *, NULL);
    }
    
    while((d = readdir(direct)) != NULL)
@@ -54,7 +54,7 @@ void traverse_differences(char *path, char *result_parent)
       else if(d->d_type == DT_REG)
       {
          new_result_path = add_to_path(result_parent, d->d_name, &result_path_len, new_result_path);
-         copy_file(new_path, new_result_path);
+         copy_file_or_hard_link(new_path, new_result_path);
          printf("\t%s\n", new_path);
       }
    }
@@ -79,8 +79,9 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
 
    while((d1 = readdir(dir[index])) != NULL)
    {
-      //NOTE add file to tha result file system
       bool found = false;
+      bool copy = true;
+
       struct dirent *d2;
       while((d2 = readdir(dir[compare_index])) != NULL)
       {
@@ -89,49 +90,86 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
          {
             if(d1->d_type == DT_REG)
             {
-               if(same_file(d1->d_name, d2->d_name, parent_dir[index], parent_dir[compare_index]))
+               if(strcmp(d1->d_name, d2->d_name) == 0)
                {
-                  found = true;
-                  break;
-               }
-               else if(strcmp(d1->d_name, d2->d_name) == 0)
-               {
-
+                  if(same_file(d1->d_name, parent_dir[index], parent_dir[compare_index]))
+                  {
+                     //if we are searching in the second directory it is the second time we encounter the duplicate file so we dont need to copy it to the merged dir
+                     if(index != 0)
+                     {
+                        copy = false;
+                     }
+                     found = true;
+                     break;
+                  }
+                  else if(file1_modif_less_file2_modif(d1->d_name, d2->d_name, parent_dir[index], parent_dir[compare_index]))
+                  {
+                     copy = false;
+                  }
                }
             }
-            else if(d1->d_type == DT_DIR && same_dir(d1->d_name, d2->d_name))
+            else if(d1->d_type == DT_DIR)
             {
-               found = true;
-               char *new_parents_dir[2];
-               new_parents_dir[index] = add_to_path(parent_dir[index], d1->d_name, NULL, NULL);
-               new_parents_dir[compare_index] = add_to_path(parent_dir[compare_index], d2->d_name, NULL, NULL);
-               print_differences_and_merge_rec(new_parents_dir ,index);
-               free_path(new_parents_dir[index]);
-               free_path(new_parents_dir[compare_index]);
-               break;
+               if(same_dir(d1->d_name, d2->d_name))
+               {
+                  copy = false;
+                  found = true;
+                  char *new_parents_dir[2];
+                  char *new_result_path = add_to_path(result_parent, d1->d_name, NULL, NULL);
+                  new_parents_dir[index] = add_to_path(parent_dir[index], d1->d_name, NULL, NULL);
+                  new_parents_dir[compare_index] = add_to_path(parent_dir[compare_index], d2->d_name, NULL, NULL);
+
+                  //if we are searching in the first directory it is the first time we encounter the duplicate dir so we need to copy it to the result directory
+                  if(index == 0)
+                  {
+                     CALL_OR_DIE(my_mkdir(new_result_path, S_IRWXU), new_result_path, int, -1);
+                  }
+
+                  print_differences_and_merge_rec(new_parents_dir ,index, new_result_path);
+
+                  free_path(new_parents_dir[index]);
+                  free_path(new_parents_dir[compare_index]);
+                  free_path(new_result_path);
+                  break;
+               }
             }
          }
       }
-      if(found == false)
+      char* path_to_file = NULL;
+      char *new_result_path = NULL;
+
+      if(found == false || copy == true)
+      {
+         path_to_file = add_to_path(parent_dir[index], d1->d_name, NULL, NULL);
+         new_result_path = add_to_path(result_parent, d1->d_name, NULL, NULL);
+      }
+
+      if(copy == true)
       {
          if(d1->d_type == DT_REG)
          {
-            char* path_to_file = add_to_path(parent_dir[index], d1->d_name, NULL, NULL);
-            printf("\t%s\n", path_to_file);
-            free_path(path_to_file);
+            copy_file_or_hard_link(path_to_file, new_result_path);
          }
          else if(d1->d_type == DT_DIR)
          {
-            char* path_to_dir = add_to_path(parent_dir[index], d1->d_name, NULL, NULL);
-            char *new_result_path = add_to_path(result_parent, d1->d_name, NULL, NULL);
-            printf("\t%s\n", path_to_dir);
-            traverse_differences(path_to_dir, new_result_path);
-            free_path(path_to_dir);
-            free_path(new_result_path);
+            CALL_OR_DIE(my_mkdir(new_result_path, S_IRWXU), new_result_path, int, -1);
          }
       }
 
+      if(found == false)
+      {
+         printf("\t%s\n", path_to_file);
+         if(d1->d_type == DT_DIR)
+         {
+            traverse_differences(path_to_file, new_result_path);
+         }
+      }
+
+      free_path(path_to_file);
+      free_path(new_result_path);
+
       found = false;
+      copy = true;
       rewinddir(dir[compare_index]);
    }
 
@@ -148,81 +186,10 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
 
 void print_differences_and_merge(char *parent1_dir, char *parent2_dir, char *result_parent)
 {
-   if(result_parent != NULL)
-   {
-      CALL_OR_DIE(mkdir(result_parent, S_IRWXU), "wtf", int, -1);
-   }
-
-   DIR *dir1 = CALL_OR_DIE(opendir(parent1_dir), "opendir error", DIR*, NULL);
-   DIR *dir2 = CALL_OR_DIE(opendir(parent2_dir), "opendir error", DIR*, NULL);
-
-   struct dirent *d1;
-
-   printf("In %s :\n", parent1_dir);
-
-   while((d1 = readdir(dir1)) != NULL)
-   {
-      //NOTE add file to tha result file system
-      bool found = false;
-      struct dirent *d2;
-      while((d2 = readdir(dir2)) != NULL)
-      {
-         //NOTE MAYBE ADD A LIST OF THE FILES THAT ARE THE SAME SO WE DONT SEARCH IT AGAIN FOR THE SECOND DIRECTORY
-         if(d1->d_type == d2->d_type)
-         {
-            if(d1->d_type == DT_REG && same_file(d1->d_name, d2->d_name, parent1_dir, parent2_dir))
-            {
-               found = true;
-               break;
-            }
-            else if(d1->d_type == DT_DIR && same_dir(d1->d_name, d2->d_name))
-            {
-               //NOTE ADD RECURSIVE CALL FOR THIS DIRECTORY
-               found = true;
-               break;
-            }
-         }
-      }
-      if(found == false)
-      {
-         
-      }
-
-      found = false;
-      rewinddir(dir2);
-   }
-
-   rewinddir(dir1);
-   struct dirent *d2;
-
-   while((d2 = readdir(dir2)) != NULL)
-   {
-      bool found = false;
-      struct dirent *d1;
-      while((d1 = readdir(dir1)) != NULL)
-      {
-         if(d1->d_type == d2->d_type)
-         {
-            if(d2->d_type == DT_REG && same_file(d1->d_name, d2->d_name, parent1_dir, parent2_dir))
-            {
-               found = true;
-               break;
-            }
-            else if(d2->d_type == DT_DIR && same_dir(d1->d_name, d2->d_name))
-            {
-               //NOTE ADD RECURSIVE CALL FOR THIS DIRECTORY
-               found = true;
-               break;
-            }
-         }
-      }
-      if(found == false)
-      {
-         //NOTE add file to tha result file system
-         
-      }
-
-      found = false;
-      rewinddir(dir2);
-   }
+   CALL_OR_DIE(my_mkdir(result_parent, S_IRWXU), "wtf", int, -1);
+   char *parents_dir[2] = {parent1_dir, parent1_dir};
+   printf("In %s :\n", parents_dir[0]);
+   print_differences_and_merge_rec(parents_dir, 0, result_parent);
+   printf("In %s :\n", parents_dir[1]);
+   print_differences_and_merge_rec(parents_dir, 1, result_parent);
 }
