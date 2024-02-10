@@ -5,6 +5,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#define _GNU_SOURCE
+#include <dirent.h>
 
 char *add_to_path(char *current_path, char *new, int *current_size, char *result)
 {
@@ -183,3 +185,59 @@ bool file1_modif_less_file2_modif(char *name1, char *name2, char *path1, char *p
 
    return result;
 }
+
+bool same_link(char* name1, char* path1, char* name2, char* path2)
+{
+   if(strcmp(name1, name2) != 0)
+   {
+        return false;
+   }
+   DIR* dirptr=CALL_OR_DIE(opendir("./"), "opendir error", DIR*, NULL);
+   int dirfid=CALL_OR_DIE(dirfd(dirptr),"dirfd error", int , -1);
+
+   char * target1=NULL;
+   char * target2=NULL;
+   ssize_t size1 = 0, size2=0;
+   ssize_t len1=0, len2;
+
+   do
+   {
+      free(target1);
+      size1 +=1024;
+      target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
+      len1=CALL_OR_DIE(readlinkat(dirfid, path1, target1, size1-1), "readlink error", ssize_t, -1);
+   }while((len1 == size2 -1));
+
+   target1[len1] = '\0';
+   // printf("%s\n", target1);
+
+   target2=CALL_OR_DIE(malloc(sizeof(char)*(len1+1)), "malloc error" , void*, NULL);
+   if(CALL_OR_DIE(readlinkat(dirfid, path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
+   {    
+      target2[len1] = '\0';
+      // printf("%s\n",target2);
+      free(target1);
+      free(target2);
+      if(closedir(dirptr) == -1)
+      {
+         perror("closedir error");
+      }
+      return false;
+   }
+   target2[len1] = '\0';
+   if(closedir(dirptr) == -1)
+   {
+      perror("closedir error");
+   }
+   // printf("%s\n",target2);
+   if (strcmp(target1, target2) == 0) {
+      free(target1);
+      free(target2);
+
+      return true; // The links point to the same target
+   } else {
+      free(target1);
+      free(target2);
+      return false; // The links do not point to the same target
+   }
+} 

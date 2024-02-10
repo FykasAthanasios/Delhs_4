@@ -36,5 +36,6 @@ bool same_dir(char* name1, char* name2);
 //compare files with the same name
 bool same_file(char* name, char* path1, char* path2);
 bool file1_modif_less_file2_modif(char *name1, char *name2, char *path1, char *path2);
+bool same_link(char* name1, char* path1, char* name2, char* path2);
 
 #endif
