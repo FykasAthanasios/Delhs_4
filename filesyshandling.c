@@ -186,58 +186,118 @@ bool file1_modif_less_file2_modif(char *name1, char *name2, char *path1, char *p
    return result;
 }
 
-bool same_link(char* name1, char* path1, char* name2, char* path2)
+bool same_link(char* name1, char* name2, char* path1, char* path2)
 {
    if(strcmp(name1, name2) != 0)
    {
         return false;
    }
-   DIR* dirptr=CALL_OR_DIE(opendir("./"), "opendir error", DIR*, NULL);
-   int dirfid=CALL_OR_DIE(dirfd(dirptr),"dirfd error", int , -1);
+    DIR* dirptr=CALL_OR_DIE(opendir("./"), "opendir error", DIR*, NULL);
+    int dirfid=CALL_OR_DIE(dirfd(dirptr),"dirfd error", int , -1);
 
-   char * target1=NULL;
-   char * target2=NULL;
-   ssize_t size1 = 0, size2=0;
-   ssize_t len1=0, len2;
+    char * target1=NULL;
+    char * target2=NULL;
+    ssize_t size1 = 0, size2=0;
+    ssize_t len1=0, len2;
 
-   do
-   {
-      free(target1);
-      size1 +=1024;
-      target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
-      len1=CALL_OR_DIE(readlinkat(dirfid, path1, target1, size1-1), "readlink error", ssize_t, -1);
-   }while((len1 == size2 -1));
+    do
+    {
+        free(target1);
+        size1 +=1024;
+        target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
+        len1=CALL_OR_DIE(readlinkat(dirfid, path1, target1, size1-1), "readlink error", ssize_t, -1);
+    }while((len1 == size2 -1));
 
-   target1[len1] = '\0';
-   // printf("%s\n", target1);
+    target1[len1] = '\0';
+    printf("%s\n", target1);
 
-   target2=CALL_OR_DIE(malloc(sizeof(char)*(len1+1)), "malloc error" , void*, NULL);
-   if(CALL_OR_DIE(readlinkat(dirfid, path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
-   {    
-      target2[len1] = '\0';
-      // printf("%s\n",target2);
-      free(target1);
-      free(target2);
-      if(closedir(dirptr) == -1)
-      {
-         perror("closedir error");
-      }
-      return false;
-   }
-   target2[len1] = '\0';
-   if(closedir(dirptr) == -1)
-   {
-      perror("closedir error");
-   }
-   // printf("%s\n",target2);
-   if (strcmp(target1, target2) == 0) {
-      free(target1);
-      free(target2);
+    target2=CALL_OR_DIE(malloc(sizeof(char)*(len1+1)), "malloc error" , void*, NULL);
+    if(CALL_OR_DIE(readlinkat(dirfid, path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
+    {    
+        target2[len1] = '\0';
+        // printf("%s\n",target2);
+        free(target1);
+        free(target2);
+        if(closedir(dirptr) == -1)
+        {
+            perror("closedir error");
+        }
+        return false;
+    }
+    target2[len1] = '\0';
+    if(closedir(dirptr) == -1)
+    {
+        perror("closedir error");
+    }
 
-      return true; // The links point to the same target
-   } else {
+    struct stat statbuf;
+
+    //Check if both links , look to a link, and call the same function rec with the new paths
+    
+    printf("%s\n",target2);
+    if (strcmp(target1, target2) == 0) {
+        if( is_link_target_a_link(target1) == true , is_link_target_a_link(target2) == true) 
+        {
+            //Assuming the maximum characters for a file name is 20
+            char* tempname1=malloc(sizeof(char)*20);
+            char* tempname2=malloc(sizeof(char)*20);
+            getLastPathComponent(target1, tempname1, 20);
+            getLastPathComponent(target2, tempname2, 20);
+            if(same_link( tempname1 , tempname2, target1, target2) == false)
+            {   
+                free(tempname1);
+                free(tempname2);
+                return false;
+            }
+            free(tempname1);
+            free(tempname2);
+        }
+        free(target1);
+        free(target2);
+        
+        return true; // The links point to the same target
+    } else {
       free(target1);
       free(target2);
       return false; // The links do not point to the same target
-   }
-} 
+    }
+}
+
+bool is_link_target_a_link(const char* path)
+{
+    struct stat statbuf;
+    printf("%s\n", path);
+    CALL_OR_DIE(lstat(path, &statbuf), "lstat error", int, -1);
+
+    if (S_ISLNK(statbuf.st_mode)) {
+        return true; // The path is a symbolic link
+    } else {
+        return false; // The path is not a symbolic link
+    }
+}
+
+void getLastPathComponent(const char* path, char* lastComponent, int bufSize) {
+    if (path == NULL || lastComponent == NULL || bufSize == 0) {
+        return;
+    }
+    int length = strlen(path);
+    if (length == 0) {
+        strncpy(lastComponent, "", bufSize);
+        return;
+    }
+    //move the pointer to the last character
+    const char* p = path + length - 1;
+
+    //Find the start of the last component of the path
+    const char* end = p;
+    while (p > path && *(p - 1) != '/') {
+        --p;
+    }
+
+    int lastLen = end - p + 1;
+
+    if (lastLen < bufSize) {
+        memcpy(lastComponent, p, lastLen);
+        lastComponent[lastLen] = '\0';
+    }
+}
