@@ -74,7 +74,26 @@ void copy_file(char *path, char *new_path)
 
    CALL_OR_DIE(my_creat(new_path, S_IRWXU), "create error", int, -1);
 
-   
+   int fid1 = CALL_OR_DIE(open(path, O_RDONLY | O_NONBLOCK), "open error", int, -1);
+
+   int fid2 = CALL_OR_DIE(open(new_path, O_WRONLY | O_NONBLOCK), "open error", int, -1);
+
+   char byte;
+
+   while(CALL_OR_DIE(read(fid1, &byte, 1), "read error", int, -1) != 0)
+   {
+      write(fid2, &byte, 1);
+   }
+
+   if(close(fid1) == -1)
+   {
+      perror("close error");
+   }
+
+   if(close(fid2) == -1)
+   {
+      perror("close error");
+   }
 }
 
 bool same_dir(char* name1, char* name2)
@@ -118,7 +137,7 @@ bool same_file(char* name1, char* name2, char* path1, char* path2)
 
    char byte1, byte2;
 
-   while(read(fid1, &byte1, 1) != 0 && read(fid2, &byte2, 1) != 0)
+   while(CALL_OR_DIE(read(fid1, &byte1, 1), "read error", int, -1) != 0 && CALL_OR_DIE(read(fid2, &byte2, 1), "read error", int, -1) != 0)
    {
       if(byte1 != byte2)
       {

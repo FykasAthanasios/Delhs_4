@@ -12,7 +12,8 @@
       "utility": "c",
       "compare": "c",
       "fcntl.h": "c",
-      "stat.h": "c"
+      "stat.h": "c",
+      "cstddef": "c"
    },
    "C_Cpp.errorSquiggles": "enabled"
 }
