@@ -1,5 +1,5 @@
 CC = gcc
-Flags = -std=c11 -D_DEFAULT_SOURCE -Wall
+Flags = -std=c11 -Wall
 
 targe: .obj_dir .main
 

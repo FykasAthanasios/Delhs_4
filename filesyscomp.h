@@ -1,6 +1,10 @@
 #ifndef FILESYSCOMP_H
 #define FILESYSCOMP_H
 
+#ifndef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE
+#endif
+
 /*
  * if result_parent == NULL then it will only print the differences betwen the 2 file systems
  * if the result parent contains a string the it will print the difference and at the same time it

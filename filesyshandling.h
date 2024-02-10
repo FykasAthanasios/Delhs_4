@@ -1,6 +1,10 @@
 #ifndef FILESYHANDLING_H
 #define FILESYHANDLING_H
 
+#ifndef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE
+#endif
+
 #include <stdbool.h>
 #include <sys/types.h>
 
