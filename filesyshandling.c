@@ -5,7 +5,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#define _GNU_SOURCE
 #include <dirent.h>
 
 char *add_to_path(char *current_path, char *new, int *current_size, char *result)
