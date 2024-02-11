@@ -69,19 +69,24 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
       compare_index = 1;
 
    DIR *dir[2];
+   //printf("%s %s\n", parent_dir[0], parent_dir[1]);
    dir[0] = CALL_OR_DIE(opendir(parent_dir[0]), "opendir error", DIR*, NULL);
    dir[1] = CALL_OR_DIE(opendir(parent_dir[1]), "opendir error", DIR*, NULL);
+   //printf("ok\n");
 
    struct dirent *d1;
 
    while((d1 = readdir(dir[index])) != NULL)
    {
+      if(check_to_ignore_dir(d1->d_name)) continue;
+
       bool found = false;
       bool copy = true;
 
       struct dirent *d2;
       while((d2 = readdir(dir[compare_index])) != NULL)
       {
+         if(check_to_ignore_dir(d2->d_name)) continue;
          //NOTE MAYBE ADD A LIST OF THE FILES THAT ARE THE SAME SO WE DONT SEARCH IT AGAIN FOR THE SECOND DIRECTORY
          if(d1->d_type == d2->d_type)
          {
