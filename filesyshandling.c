@@ -433,9 +433,13 @@ bool same_link(char* name1, char* path1, char* path2)
       target2[len1] = '\0';
       free(target1);
       free(target2);
+      free(real_path1);
+      free(real_path2);
       return false;
    }
    target2[len1] = '\0';
+   free(real_path1);
+   free(real_path2);
    //Check if both links , look to a link, and call the same function rec with the new paths
    if( (is_link_target_a_link(target1) == true) && (is_link_target_a_link(target2) == true)) 
    {
@@ -453,6 +457,10 @@ bool same_link(char* name1, char* path1, char* path2)
       }
       free(tempname1);
       free(tempname2);
+      free(target1);
+      free(target2);
+      return false;
+
    }
    char* tempname1=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
    char* tempname2=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
@@ -467,7 +475,9 @@ bool same_link(char* name1, char* path1, char* path2)
       free(tempname1);
       free(tempname2);
       if ( result == false)
-      {
+      {    
+         free(target1);
+         free(target2);
          return false;
       }
       return true; // The links point to the same target
