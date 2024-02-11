@@ -187,7 +187,7 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
 
 void print_differences_and_merge(char *parent1_dir, char *parent2_dir, char *result_parent)
 {
-   CALL_OR_DIE(my_mkdir(result_parent, S_IRWXU), "wtf", int, -1);
+   CALL_OR_DIE(my_mkdir(result_parent, S_IRWXU), "mkdir error", int, -1);
    char *parents_dir[2] = {parent1_dir, parent2_dir};
    printf("In %s :\n", parents_dir[0]);
    print_differences_and_merge_rec(parents_dir, 0, result_parent);
