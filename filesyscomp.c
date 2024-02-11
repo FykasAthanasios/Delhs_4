@@ -57,6 +57,8 @@ void traverse_differences(char *path, char *result_parent)
       else if(d->d_type == DT_LNK)
       {
          new_result_path = add_to_path(result_parent, d->d_name, &result_path_len, new_result_path);
+         copy_link(new_path, new_result_path);
+         printf("\t%s\n", new_path);
       }
    }
 
