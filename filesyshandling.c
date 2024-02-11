@@ -199,7 +199,7 @@ bool same_link(char* name1, char* name2, char* path1, char* path2)
    char * target1=NULL;
    char * target2=NULL;
    ssize_t size1 = 0, size2=0;
-   ssize_t len1=0, len2;
+   ssize_t len1=0;
 
    do
    {
@@ -228,7 +228,7 @@ bool same_link(char* name1, char* name2, char* path1, char* path2)
    {
       perror("closedir error");
    }
-   struct stat statbuf;
+
    //Check if both links , look to a link, and call the same function rec with the new paths
    if( is_link_target_a_link(target1) == true , is_link_target_a_link(target2) == true) 
    {
