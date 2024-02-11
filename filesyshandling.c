@@ -109,6 +109,7 @@ typedef struct
 
 Points find_string_in_string(const char* s, const char* string_to_find)
 {
+   int len = strlen(string_to_find);
    Points p;
    for(int i = 0 ; s[i] != '\0' ; i++)
    {
@@ -117,7 +118,7 @@ Points find_string_in_string(const char* s, const char* string_to_find)
          bool found = true;
          p.start = i;
          int j = i + 1;
-         for(j = i + 1 ; s[j] != '\0' ; j++)
+         for(j = i + 1 ; s[j] != '\0' && (j - i) < len; j++)
          {
             if(s[j] != string_to_find[j - i])
             {
@@ -126,7 +127,7 @@ Points find_string_in_string(const char* s, const char* string_to_find)
          }
          if(found == true)
          {
-            p.end = j;
+            p.end = j - 1;
             return p;
          }
       }
@@ -200,7 +201,10 @@ void copy_link(char *path, char *new_path)
    strcat(new_path_to_file, result_parent_dir);
    strcat(new_path_to_file, (target + p.end + 1));
 
-   printf("%s\n", new_path_to_file);
+   free_path(target);
+
+   CALL_OR_DIE(symlink(new_path_to_file, new_path), "symlink error", int, -1);
+   free_path(new_path_to_file);
 }
 
 bool same_dir(char* name1, char* name2)
