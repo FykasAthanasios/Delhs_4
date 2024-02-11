@@ -66,6 +66,9 @@ clear_test_dir:
 clear_created_dir:
 	rm -rf dirC
 
+test:
+	$(CC) $(Flags) -g filesyshandling.c test.c -o test
+
 .obj_dir:
 	mkdir -p obj
 
