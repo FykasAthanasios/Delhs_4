@@ -311,6 +311,8 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
 
 bool same_link(char* name1, char* path1, char* path2)
 {
+   char *real_path1 = add_to_path(path1, name1, NULL, NULL);
+   char *real_path2 = add_to_path(path2, name1, NULL, NULL); 
    DIR* dirptr=CALL_OR_DIE(opendir("./"), "opendir error", DIR*, NULL);
    int dirfid=CALL_OR_DIE(dirfd(dirptr),"dirfd error", int , -1);
 
@@ -324,13 +326,13 @@ bool same_link(char* name1, char* path1, char* path2)
       free(target1);
       size1 +=1024;
       target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
-      len1=CALL_OR_DIE(readlinkat(dirfid, path1, target1, size1-1), "readlink error", ssize_t, -1);
+      len1=CALL_OR_DIE(readlinkat(dirfid, real_path1, target1, size1-1), "readlink error", ssize_t, -1);
    }while((len1 == size2 -1));
 
    target1[len1] = '\0';
 
    target2=CALL_OR_DIE(malloc(sizeof(char)*(len1+1)), "malloc error" , void*, NULL);
-   if(CALL_OR_DIE(readlinkat(dirfid, path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
+   if(CALL_OR_DIE(readlinkat(dirfid, real_path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
    {    
       target2[len1] = '\0';
       free(target1);
