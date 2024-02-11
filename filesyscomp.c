@@ -54,6 +54,10 @@ void traverse_differences(char *path, char *result_parent)
          copy_file_or_hard_link(new_path, new_result_path);
          printf("\t%s\n", new_path);
       }
+      else if(d->d_type == DT_LNK)
+      {
+         new_result_path = add_to_path(result_parent, d->d_name, &result_path_len, new_result_path);
+      }
    }
 
    free_path(new_path);

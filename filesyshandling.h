@@ -31,6 +31,7 @@ int my_mkdir(char *path, mode_t mode);
 int my_creat(char *path, mode_t mode);
 
 void copy_file_or_hard_link(char *path, char *new_path);
+void copy_link(char *path, char *new_path);
 
 bool same_dir(char* name1, char* name2);
 //compare files with the same name

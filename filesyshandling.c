@@ -101,6 +101,69 @@ void copy_file_or_hard_link(char *path, char *new_path)
    copy_file(path, new_path);
 }
 
+void copy_link(char *path, char *new_path)
+{
+   if(new_path == NULL) return;
+
+   char result_parent_dir[256];
+   char original_parent[256];
+
+   //find the origin parent directory and the destination parent directory to copy the link
+   int len1, len2;
+   for(int len1 = 0, len1 = 0; new_path[len1] != '/' &&  original_parent[len2] != '/' ; len1++, len2++)
+   {
+      if(new_path[len1] == '/')
+      {
+         len1--;
+      }
+      else
+      {
+         result_parent_dir[len1] = new_path[len1];
+      }
+      
+      if(path[len2] == '/')
+      {
+         len2--;
+      }
+      else
+      {
+         original_parent[len2] = path[len2];
+      }
+   }
+
+   result_parent_dir[len1] = '\0';
+   original_parent[len2] = '\0';
+
+   DIR* dirptr=CALL_OR_DIE(opendir("./"), "opendir error", DIR*, NULL);
+   int dirfid=CALL_OR_DIE(dirfd(dirptr),"dirfd error", int , -1);
+
+   char * target = NULL;
+   ssize_t size = 0;
+   ssize_t len = 0;
+
+   do
+   {
+      free(target);
+      size += 1024;
+      target = CALL_OR_DIE(malloc(size * sizeof(char)), "malloc error", char*, NULL);
+      len = CALL_OR_DIE(readlinkat(dirfid, path, target, size - 1), "readlink error", ssize_t, -1);
+   }while((len == size -1));
+
+   target[len] = '\0';
+
+   if(closedir(dirptr) == -1)
+   {
+      perror("closedir error");
+   }
+
+   char *new_path_to_file = CALL_OR_DIE(malloc(((len + 1) - len2 + len1 + 1) * sizeof(char)), "malloc error", void *, NULL);
+   strcpy(new_path_to_file, strtok(target, original_parent));
+   strcat(new_path_to_file, result_parent_dir);
+   strcat(new_path_to_file, strtok(NULL, ""));
+
+   printf("%s\n", new_path_to_file);
+}
+
 bool same_dir(char* name1, char* name2)
 {
    if(strcmp(name1, name2) != 0)
@@ -238,7 +301,7 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
 
    char * target1=NULL;
    char * target2=NULL;
-   ssize_t size1 = 0, size2=0;
+   ssize_t size1 = 0;
    ssize_t len1=0;
 
    do
@@ -247,7 +310,7 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
       size1 +=1024;
       target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
       len1=CALL_OR_DIE(readlinkat(dirfid, path1, target1, size1-1), "readlink error", ssize_t, -1);
-   }while((len1 == size2 -1));
+   }while((len1 == size1 -1));
 
    target1[len1] = '\0';
 
@@ -318,7 +381,7 @@ bool same_link(char* name1, char* path1, char* path2)
 
    char * target1=NULL;
    char * target2=NULL;
-   ssize_t size1 = 0, size2=0;
+   ssize_t size1 = 0;
    ssize_t len1=0;
 
    do
@@ -327,7 +390,7 @@ bool same_link(char* name1, char* path1, char* path2)
       size1 +=1024;
       target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
       len1=CALL_OR_DIE(readlinkat(dirfid, real_path1, target1, size1-1), "readlink error", ssize_t, -1);
-   }while((len1 == size2 -1));
+   }while((len1 == size1 -1));
 
    target1[len1] = '\0';
 
