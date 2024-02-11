@@ -229,161 +229,161 @@ void getLastPathComponent(const char* path, char* lastComponent, int bufSize) {
 
 bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
 {
-    if(strcmp(name1, name2) != 0)
-    {
-        return false;
-    }
-    DIR* dirptr=CALL_OR_DIE(opendir("./"), "opendir error", DIR*, NULL);
-    int dirfid=CALL_OR_DIE(dirfd(dirptr),"dirfd error", int , -1);
+   if(strcmp(name1, name2) != 0)
+   {
+      return false;
+   }
+   DIR* dirptr=CALL_OR_DIE(opendir("./"), "opendir error", DIR*, NULL);
+   int dirfid=CALL_OR_DIE(dirfd(dirptr),"dirfd error", int , -1);
 
-    char * target1=NULL;
-    char * target2=NULL;
-    ssize_t size1 = 0, size2=0;
-    ssize_t len1=0;
+   char * target1=NULL;
+   char * target2=NULL;
+   ssize_t size1 = 0, size2=0;
+   ssize_t len1=0;
 
-    do
-    {
-        free(target1);
-        size1 +=1024;
-        target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
-        len1=CALL_OR_DIE(readlinkat(dirfid, path1, target1, size1-1), "readlink error", ssize_t, -1);
-    }while((len1 == size2 -1));
+   do
+   {
+      free(target1);
+      size1 +=1024;
+      target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
+      len1=CALL_OR_DIE(readlinkat(dirfid, path1, target1, size1-1), "readlink error", ssize_t, -1);
+   }while((len1 == size2 -1));
 
-    target1[len1] = '\0';
+   target1[len1] = '\0';
 
-    target2=CALL_OR_DIE(malloc(sizeof(char)*(len1+1)), "malloc error" , void*, NULL);
-    if(CALL_OR_DIE(readlinkat(dirfid, path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
-    {    
-        target2[len1] = '\0';
-        free(target1);
-        free(target2);
-        if(closedir(dirptr) == -1)
-        {
-            perror("closedir error");
-        }
-        return false;
-    }
-    target2[len1] = '\0';
-    if(closedir(dirptr) == -1)
-    {
-        perror("closedir error");
-    }
-    //Check if both links , look to a link, and call the same function rec with the new paths
-    if( (is_link_target_a_link(target1) == true) && (is_link_target_a_link(target2) == true)) 
-    {
-        char* tempname1=malloc(sizeof(char)*20);
-        char* tempname2=malloc(sizeof(char)*20);
-        getLastPathComponent(target1, tempname1, 20);
-        getLastPathComponent(target2, tempname2, 20);
-        if(same_link_rec( tempname1 , tempname2, target1, target2) == true) 
-        {
-            free(tempname1);
-            free(tempname2);
-            free(target1);
-            free(target2);
-            return true;
-        }
-        free(tempname1);
-        free(tempname2);
-    }
-    
-    char* tempname1=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
-    char* tempname2=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
-    getLastPathComponent(target1, tempname1, 20);
-    getLastPathComponent(target2, tempname2, 20);
-    if (strcmp(tempname1, tempname2) == 0) {     
-        bool result= same_file(tempname1, target1, target2);
-        free(tempname1);
-        free(tempname2);
-        if ( result == false)
-        {
-            return false;
-        }
-        return true; // The links point to the same target
-    } else {
-        free(target1);
-        free(target2);
-        free(tempname1);
-        free(tempname2);
-        return false; // The links do not point to the same target
-    }
+   target2=CALL_OR_DIE(malloc(sizeof(char)*(len1+1)), "malloc error" , void*, NULL);
+   if(CALL_OR_DIE(readlinkat(dirfid, path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
+   {    
+      target2[len1] = '\0';
+      free(target1);
+      free(target2);
+      if(closedir(dirptr) == -1)
+      {
+         perror("closedir error");
+      }
+      return false;
+   }
+   target2[len1] = '\0';
+   if(closedir(dirptr) == -1)
+   {
+   perror("closedir error");
+   }
+   //Check if both links , look to a link, and call the same function rec with the new paths
+   if( (is_link_target_a_link(target1) == true) && (is_link_target_a_link(target2) == true)) 
+   {
+      char* tempname1=malloc(sizeof(char)*20);
+      char* tempname2=malloc(sizeof(char)*20);
+      getLastPathComponent(target1, tempname1, 20);
+      getLastPathComponent(target2, tempname2, 20);
+      if(same_link_rec( tempname1 , tempname2, target1, target2) == true) 
+      {
+         free(tempname1);
+         free(tempname2);
+         free(target1);
+         free(target2);
+         return true;
+      }
+      free(tempname1);
+      free(tempname2);
+   }
+   
+   char* tempname1=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
+   char* tempname2=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
+   getLastPathComponent(target1, tempname1, 20);
+   getLastPathComponent(target2, tempname2, 20);
+   if (strcmp(tempname1, tempname2) == 0) {     
+      bool result= same_file(tempname1, target1, target2);
+      free(tempname1);
+      free(tempname2);
+      if ( result == false)
+      {
+         return false;
+      }
+      return true; // The links point to the same target
+   } else {
+      free(target1);
+      free(target2);
+      free(tempname1);
+      free(tempname2);
+      return false; // The links do not point to the same target
+   }
 } 
 
 bool same_link(char* name1, char* path1, char* path2)
 {
-    DIR* dirptr=CALL_OR_DIE(opendir("./"), "opendir error", DIR*, NULL);
-    int dirfid=CALL_OR_DIE(dirfd(dirptr),"dirfd error", int , -1);
+   DIR* dirptr=CALL_OR_DIE(opendir("./"), "opendir error", DIR*, NULL);
+   int dirfid=CALL_OR_DIE(dirfd(dirptr),"dirfd error", int , -1);
 
-    char * target1=NULL;
-    char * target2=NULL;
-    ssize_t size1 = 0, size2=0;
-    ssize_t len1=0;
+   char * target1=NULL;
+   char * target2=NULL;
+   ssize_t size1 = 0, size2=0;
+   ssize_t len1=0;
 
-    do
-    {
-        free(target1);
-        size1 +=1024;
-        target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
-        len1=CALL_OR_DIE(readlinkat(dirfid, path1, target1, size1-1), "readlink error", ssize_t, -1);
-    }while((len1 == size2 -1));
+   do
+   {
+      free(target1);
+      size1 +=1024;
+      target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
+      len1=CALL_OR_DIE(readlinkat(dirfid, path1, target1, size1-1), "readlink error", ssize_t, -1);
+   }while((len1 == size2 -1));
 
-    target1[len1] = '\0';
+   target1[len1] = '\0';
 
-    target2=CALL_OR_DIE(malloc(sizeof(char)*(len1+1)), "malloc error" , void*, NULL);
-    if(CALL_OR_DIE(readlinkat(dirfid, path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
-    {    
-        target2[len1] = '\0';
-        free(target1);
-        free(target2);
-        if(closedir(dirptr) == -1)
-        {
-            perror("closedir error");
-        }
-        return false;
-    }
-    target2[len1] = '\0';
-    if(closedir(dirptr) == -1)
-    {
-        perror("closedir error");
-    }
-    //Check if both links , look to a link, and call the same function rec with the new paths
-    if( (is_link_target_a_link(target1) == true) && (is_link_target_a_link(target2) == true)) 
-    {
-        char* tempname1=malloc(sizeof(char)*20);
-        char* tempname2=malloc(sizeof(char)*20);
-        getLastPathComponent(target1, tempname1, 20);
-        getLastPathComponent(target2, tempname2, 20);
-        if(same_link_rec( tempname1 , tempname2, target1, target2) == true) 
-        {
-            free(tempname1);
-            free(tempname2);
-            free(target1);
-            free(target2);
-            return true;
-        }
-        free(tempname1);
-        free(tempname2);
-    }
+   target2=CALL_OR_DIE(malloc(sizeof(char)*(len1+1)), "malloc error" , void*, NULL);
+   if(CALL_OR_DIE(readlinkat(dirfid, path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
+   {    
+      target2[len1] = '\0';
+      free(target1);
+      free(target2);
+      if(closedir(dirptr) == -1)
+      {
+         perror("closedir error");
+      }
+      return false;
+   }
+   target2[len1] = '\0';
+   if(closedir(dirptr) == -1)
+   {
+      perror("closedir error");
+   }
+   //Check if both links , look to a link, and call the same function rec with the new paths
+   if( (is_link_target_a_link(target1) == true) && (is_link_target_a_link(target2) == true)) 
+   {
+      char* tempname1=malloc(sizeof(char)*20);
+      char* tempname2=malloc(sizeof(char)*20);
+      getLastPathComponent(target1, tempname1, 20);
+      getLastPathComponent(target2, tempname2, 20);
+      if(same_link_rec( tempname1 , tempname2, target1, target2) == true) 
+      {
+         free(tempname1);
+         free(tempname2);
+         free(target1);
+         free(target2);
+         return true;
+      }
+      free(tempname1);
+      free(tempname2);
+   }
     
-    char* tempname1=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
-    char* tempname2=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
-    getLastPathComponent(target1, tempname1, 20);
-    getLastPathComponent(target2, tempname2, 20);
-    if (strcmp(tempname1, tempname2) == 0) {     
-        bool result= same_file(tempname1, target1, target2);
-        free(tempname1);
-        free(tempname2);
-        if ( result == false)
-        {
-            return false;
-        }
-        return true; // The links point to the same target
-    } else {
-        free(target1);
-        free(target2);
-        free(tempname1);
-        free(tempname2);
-        return false; // The links do not point to the same target
-    }
+   char* tempname1=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
+   char* tempname2=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
+   getLastPathComponent(target1, tempname1, 20);
+   getLastPathComponent(target2, tempname2, 20);
+   if (strcmp(tempname1, tempname2) == 0) {     
+      bool result= same_file(tempname1, target1, target2);
+      free(tempname1);
+      free(tempname2);
+      if ( result == false)
+      {
+         return false;
+      }
+      return true; // The links point to the same target
+   } else {
+      free(target1);
+      free(target2);
+      free(tempname1);
+      free(tempname2);
+      return false; // The links do not point to the same target
+   }
 } 
 
