@@ -72,7 +72,6 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
    //printf("%s %s\n", parent_dir[0], parent_dir[1]);
    dir[0] = CALL_OR_DIE(opendir(parent_dir[0]), "opendir error", DIR*, NULL);
    dir[1] = CALL_OR_DIE(opendir(parent_dir[1]), "opendir error", DIR*, NULL);
-   //printf("ok\n");
 
    struct dirent *d1;
 
@@ -189,7 +188,7 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
 void print_differences_and_merge(char *parent1_dir, char *parent2_dir, char *result_parent)
 {
    CALL_OR_DIE(my_mkdir(result_parent, S_IRWXU), "wtf", int, -1);
-   char *parents_dir[2] = {parent1_dir, parent1_dir};
+   char *parents_dir[2] = {parent1_dir, parent2_dir};
    printf("In %s :\n", parents_dir[0]);
    print_differences_and_merge_rec(parents_dir, 0, result_parent);
    printf("In %s :\n", parents_dir[1]);
