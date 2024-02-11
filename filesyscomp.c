@@ -62,6 +62,11 @@ void traverse_differences(char *path, char *result_parent)
       }
    }
 
+   if(closedir(direct) == -1)
+   {
+      perror("closedir error");
+   }
+
    free_path(new_path);
    free_path(new_result_path);
 }
@@ -140,6 +145,26 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
                   break;
                }
             }
+            else if(d1->d_type == DT_LNK)
+            {
+               if(strcmp(d1->d_name, d2->d_name) == 0)
+               {
+                  if(same_link(d1->d_name, parent_dir[index], parent_dir[compare_index]))
+                  {
+                     //if we are searching in the second directory it is the second time we encounter the duplicate file so we dont need to copy it to the merged dir
+                     if(index != 0)
+                     {
+                        copy = false;
+                     }
+                     found = true;
+                     break;
+                  }
+                  else if(file1_modif_less_file2_modif(d1->d_name, d2->d_name, parent_dir[index], parent_dir[compare_index]))
+                  {
+                     copy = false;
+                  }
+               }
+            }
          }
       }
       char* path_to_file = NULL;
@@ -160,6 +185,10 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
          else if(d1->d_type == DT_DIR)
          {
             CALL_OR_DIE(my_mkdir(new_result_path, S_IRWXU), new_result_path, int, -1);
+         }
+         else if(d1->d_type == DT_LNK)
+         {
+            copy_link(path_to_file, new_result_path);
          }
       }
 

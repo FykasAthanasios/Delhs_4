@@ -167,9 +167,6 @@ void copy_link(char *path, char *new_path)
    result_parent_dir[len1] = '\0';
    original_parent[len2] = '\0';
 
-   DIR* dirptr = CALL_OR_DIE(opendir("./"), "opendir error", DIR*, NULL);
-   int dirfid = CALL_OR_DIE(dirfd(dirptr),"dirfd error", int , -1);
-
    char * target = NULL;
    ssize_t size = 0;
    ssize_t len = 0;
@@ -179,15 +176,10 @@ void copy_link(char *path, char *new_path)
       free(target);
       size += 1024;
       target = CALL_OR_DIE(malloc(size * sizeof(char)), "malloc error", char*, NULL);
-      len = CALL_OR_DIE(readlinkat(dirfid, path, target, size - 1), "readlink error", ssize_t, -1);
+      len = CALL_OR_DIE(readlink(path, target, size - 1), "readlink error", ssize_t, -1);
    }while((len == size -1));
 
    target[len] = '\0';
-
-   if(closedir(dirptr) == -1)
-   {
-      perror("closedir error");
-   }
 
    char *new_path_to_file = CALL_OR_DIE(malloc(((len + 1) - len2 + len1 + 1) * sizeof(char)), "malloc error", void *, NULL);
    Points p = find_string_in_string(target, original_parent);
@@ -338,8 +330,6 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
    {
       return false;
    }
-   DIR* dirptr=CALL_OR_DIE(opendir("./"), "opendir error", DIR*, NULL);
-   int dirfid=CALL_OR_DIE(dirfd(dirptr),"dirfd error", int , -1);
 
    char * target1=NULL;
    char * target2=NULL;
@@ -351,28 +341,21 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
       free(target1);
       size1 +=1024;
       target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
-      len1=CALL_OR_DIE(readlinkat(dirfid, path1, target1, size1-1), "readlink error", ssize_t, -1);
+      len1=CALL_OR_DIE(readlink(path1, target1, size1-1), "readlink error", ssize_t, -1);
    }while((len1 == size1 -1));
 
    target1[len1] = '\0';
 
    target2=CALL_OR_DIE(malloc(sizeof(char)*(len1+1)), "malloc error" , void*, NULL);
-   if(CALL_OR_DIE(readlinkat(dirfid, path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
+   if(CALL_OR_DIE(readlink(path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
    {    
       target2[len1] = '\0';
       free(target1);
       free(target2);
-      if(closedir(dirptr) == -1)
-      {
-         perror("closedir error");
-      }
       return false;
    }
    target2[len1] = '\0';
-   if(closedir(dirptr) == -1)
-   {
-   perror("closedir error");
-   }
+
    //Check if both links , look to a link, and call the same function rec with the new paths
    if( (is_link_target_a_link(target1) == true) && (is_link_target_a_link(target2) == true)) 
    {
@@ -418,8 +401,6 @@ bool same_link(char* name1, char* path1, char* path2)
 {
    char *real_path1 = add_to_path(path1, name1, NULL, NULL);
    char *real_path2 = add_to_path(path2, name1, NULL, NULL); 
-   DIR* dirptr=CALL_OR_DIE(opendir("./"), "opendir error", DIR*, NULL);
-   int dirfid=CALL_OR_DIE(dirfd(dirptr),"dirfd error", int , -1);
 
    char * target1=NULL;
    char * target2=NULL;
@@ -431,28 +412,21 @@ bool same_link(char* name1, char* path1, char* path2)
       free(target1);
       size1 +=1024;
       target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
-      len1=CALL_OR_DIE(readlinkat(dirfid, real_path1, target1, size1-1), "readlink error", ssize_t, -1);
+      len1=CALL_OR_DIE(readlink(real_path1, target1, size1-1), "readlink error", ssize_t, -1);
    }while((len1 == size1 -1));
 
    target1[len1] = '\0';
 
    target2=CALL_OR_DIE(malloc(sizeof(char)*(len1+1)), "malloc error" , void*, NULL);
-   if(CALL_OR_DIE(readlinkat(dirfid, real_path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
+   if(CALL_OR_DIE(readlink(real_path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
    {    
       target2[len1] = '\0';
       free(target1);
       free(target2);
-      if(closedir(dirptr) == -1)
-      {
-         perror("closedir error");
-      }
       return false;
    }
    target2[len1] = '\0';
-   if(closedir(dirptr) == -1)
-   {
-      perror("closedir error");
-   }
+
    //Check if both links , look to a link, and call the same function rec with the new paths
    if( (is_link_target_a_link(target1) == true) && (is_link_target_a_link(target2) == true)) 
    {
