@@ -101,6 +101,39 @@ void copy_file_or_hard_link(char *path, char *new_path)
    copy_file(path, new_path);
 }
 
+typedef struct
+{
+   int start;
+   int end;
+}Points;
+
+Points find_string_in_string(const char* s, const char* string_to_find)
+{
+   Points p;
+   for(int i = 0 ; s[i] != '\0' ; i++)
+   {
+      if(s[i] == string_to_find[0])
+      {
+         bool found = true;
+         p.start = i;
+         int j = i + 1;
+         for(j = i + 1 ; s[j] != '\0' ; j++)
+         {
+            if(s[j] != string_to_find[j - i])
+            {
+               found = false;
+            }
+         }
+         if(found == true)
+         {
+            p.end = j;
+            return p;
+         }
+      }
+   }
+   return (Points){.start = -1, .end = -1};
+}
+
 void copy_link(char *path, char *new_path)
 {
    if(new_path == NULL) return;
@@ -134,8 +167,8 @@ void copy_link(char *path, char *new_path)
    result_parent_dir[len1] = '\0';
    original_parent[len2] = '\0';
 
-   DIR* dirptr=CALL_OR_DIE(opendir("./"), "opendir error", DIR*, NULL);
-   int dirfid=CALL_OR_DIE(dirfd(dirptr),"dirfd error", int , -1);
+   DIR* dirptr = CALL_OR_DIE(opendir("./"), "opendir error", DIR*, NULL);
+   int dirfid = CALL_OR_DIE(dirfd(dirptr),"dirfd error", int , -1);
 
    char * target = NULL;
    ssize_t size = 0;
@@ -157,9 +190,15 @@ void copy_link(char *path, char *new_path)
    }
 
    char *new_path_to_file = CALL_OR_DIE(malloc(((len + 1) - len2 + len1 + 1) * sizeof(char)), "malloc error", void *, NULL);
-   strcpy(new_path_to_file, strtok(target, original_parent));
+   Points p = find_string_in_string(target, original_parent);
+
+   for(int i = 0 ; i < p.start ; i++)
+   {
+      new_path_to_file[i] = target[i];
+   }
+   new_path_to_file[p.start] = '\0';
    strcat(new_path_to_file, result_parent_dir);
-   strcat(new_path_to_file, strtok(NULL, ""));
+   strcat(new_path_to_file, (target + p.end + 1));
 
    printf("%s\n", new_path_to_file);
 }
