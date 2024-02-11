@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <dirent.h>
-#include <sys/stat.h>
 #include <errno.h>
 #include <fcntl.h>
 
@@ -80,7 +79,7 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
       compare_index = 1;
 
    DIR *dir[2];
-   //printf("%s %s\n", parent_dir[0], parent_dir[1]);
+
    dir[0] = CALL_OR_DIE(opendir(parent_dir[0]), "opendir error", DIR*, NULL);
    dir[1] = CALL_OR_DIE(opendir(parent_dir[1]), "opendir error", DIR*, NULL);
 

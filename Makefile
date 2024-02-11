@@ -2,11 +2,13 @@ CC = gcc
 Flags = -std=c11 -Wall
 
 targe: .obj_dir .main
+	rm -rf dirC
 
 clear:
 	rm -rf obj
 	rm -f *.o
 	rm -f cmpcat
+	rm -rf dirC
 case1:
 	mkdir dirA
 	touch dirA/A
@@ -62,9 +64,6 @@ case2:
 clear_test_dir:
 	rm -rf dirA
 	rm -rf dirB
-
-clear_created_dir:
-	rm -rf dirC
 
 test:
 	$(CC) $(Flags) -g filesyshandling.c test.c -o test
