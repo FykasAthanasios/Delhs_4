@@ -213,7 +213,7 @@ bool same_file(char* name, char* path1, char* path2)
 {
    char *real_path1 = add_to_path(path1, name, NULL, NULL);
    char *real_path2 = add_to_path(path2, name, NULL, NULL); 
-
+   
    struct stat stat1, stat2;
 
    CALL_OR_DIE(stat(real_path1, &stat1), "stat error", int, -1);
@@ -398,11 +398,21 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
    }
 } 
 
+void removeLastComponent(char *path) {
+   int len = strlen(path);
+
+   for (int i = len - 1; i >= 0; i--) {
+      if (path[i] == '/' || path[i] == '\\') { 
+         path[i] = '\0';
+         break;
+      }
+   }
+}
+
 bool same_link(char* name1, char* path1, char* path2)
 {
    char *real_path1 = add_to_path(path1, name1, NULL, NULL);
    char *real_path2 = add_to_path(path2, name1, NULL, NULL); 
-
    char * target1=NULL;
    char * target2=NULL;
    ssize_t size1 = 0;
@@ -417,7 +427,6 @@ bool same_link(char* name1, char* path1, char* path2)
    }while((len1 == size1 -1));
 
    target1[len1] = '\0';
-
    target2=CALL_OR_DIE(malloc(sizeof(char)*(len1+1)), "malloc error" , void*, NULL);
    if(CALL_OR_DIE(readlink(real_path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
    {    
@@ -427,7 +436,6 @@ bool same_link(char* name1, char* path1, char* path2)
       return false;
    }
    target2[len1] = '\0';
-
    //Check if both links , look to a link, and call the same function rec with the new paths
    if( (is_link_target_a_link(target1) == true) && (is_link_target_a_link(target2) == true)) 
    {
@@ -446,12 +454,15 @@ bool same_link(char* name1, char* path1, char* path2)
       free(tempname1);
       free(tempname2);
    }
-    
    char* tempname1=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
    char* tempname2=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
    getLastPathComponent(target1, tempname1, 20);
    getLastPathComponent(target2, tempname2, 20);
+  
    if (strcmp(tempname1, tempname2) == 0) {      
+
+      removeLastComponent(target1);
+      removeLastComponent(target2);
       bool result= same_file(tempname1, target1, target2);
       free(tempname1);
       free(tempname2);
