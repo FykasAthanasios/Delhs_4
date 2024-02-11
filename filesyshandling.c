@@ -110,7 +110,7 @@ void copy_link(char *path, char *new_path)
 
    //find the origin parent directory and the destination parent directory to copy the link
    int len1, len2;
-   for(int len1 = 0, len1 = 0; new_path[len1] != '/' &&  original_parent[len2] != '/' ; len1++, len2++)
+   for(len1 = 0, len1 = 0; new_path[len1] != '/' &&  original_parent[len2] != '/' ; len1++, len2++)
    {
       if(new_path[len1] == '/')
       {
