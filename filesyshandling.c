@@ -143,7 +143,7 @@ void copy_link(char *path, char *new_path)
 
    //find the origin parent directory and the destination parent directory to copy the link
    int len1, len2;
-   for(len1 = 0, len1 = 0; new_path[len1] != '/' &&  original_parent[len2] != '/' ; len1++, len2++)
+   for(len1 = 0, len2 = 0; new_path[len1] != '/' &&  path[len2] != '/' ; len1++, len2++)
    {
       if(new_path[len1] == '/')
       {
@@ -189,6 +189,7 @@ void copy_link(char *path, char *new_path)
       new_path_to_file[i] = target[i];
    }
    new_path_to_file[p.start] = '\0';
+   
    strcat(new_path_to_file, result_parent_dir);
    strcat(new_path_to_file, (target + p.end + 1));
 
@@ -287,7 +288,7 @@ bool file1_modif_less_file2_modif(char *name1, char *name2, char *path1, char *p
 bool is_link_target_a_link(const char* path)
 {
    struct stat statbuf;
-   printf("%s\n", path);
+   
    CALL_OR_DIE(lstat(path, &statbuf), "lstat error", int, -1);
 
    if (S_ISLNK(statbuf.st_mode)) {
@@ -379,7 +380,7 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
    char* tempname2=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
    getLastPathComponent(target1, tempname1, 20);
    getLastPathComponent(target2, tempname2, 20);
-   if (strcmp(tempname1, tempname2) == 0) {     
+   if (strcmp(tempname1, tempname2) == 0) {    
       bool result= same_file(tempname1, target1, target2);
       free(tempname1);
       free(tempname2);
@@ -450,7 +451,7 @@ bool same_link(char* name1, char* path1, char* path2)
    char* tempname2=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
    getLastPathComponent(target1, tempname1, 20);
    getLastPathComponent(target2, tempname2, 20);
-   if (strcmp(tempname1, tempname2) == 0) {     
+   if (strcmp(tempname1, tempname2) == 0) {      
       bool result= same_file(tempname1, target1, target2);
       free(tempname1);
       free(tempname2);
