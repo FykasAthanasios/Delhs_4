@@ -207,11 +207,6 @@ void copy_link(char *path, char *new_path)
    }while((len == size -1));
    target[len] = '\0';
 
-   char *temp = realpath(target, NULL);
-   free_path(target);
-   target = temp;
-   len = strlen(target);
-
    //create a new path path for the link to point to by changing the path for example /home/dirA/dirRandom/link -> /home/dirC/dirRandom/link
    char *new_path_to_file = CALL_OR_DIE(malloc(((len + 1) - len2 + len1 + 1) * sizeof(char)), "malloc error", void *, NULL);
    Points p = find_string_in_string(target, original_parent);
@@ -453,7 +448,7 @@ bool same_link(char* name1, char* path1, char* path2)
    do
    {
       free(target1);
-      size1 +=1024;
+      size1 +=64;
       target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
       len1=CALL_OR_DIE(readlink(real_path1, target1, size1-1), "readlink error", ssize_t, -1);
    }while((len1 == size1 -1));
