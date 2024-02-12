@@ -322,6 +322,32 @@ int compare_file1_modif_with_file2_modif(char *name1, char *name2, char *path1, 
    return result;
 }
 
+int compare_link1_modif_with_link2_modif(char* name1, char * name2, char* path1, char *path2)
+{
+   char* real_path1 = add_to_path(path1, name1, NULL, NULL);
+   char* real_path2 = add_to_path(path2, name2, NULL, NULL);
+
+   struct stat stat1, stat2;
+
+   CALL_OR_DIE(lstat(real_path1, &stat1), "stat error", int, -1);
+   CALL_OR_DIE(lstat(real_path2, &stat2), "stat error", int, -1);
+
+   int result = 0;
+   if(stat1.st_mtime == stat2.st_mtime)
+   {
+      result = 1;
+   }
+   else if(stat1.st_mtime < stat2.st_mtime)
+   {
+      result = 2;
+   }
+
+   free(real_path1);
+   free(real_path2);
+
+   return result;
+}
+
 bool is_link_target_a_link(const char* path)
 {
    struct stat statbuf;
