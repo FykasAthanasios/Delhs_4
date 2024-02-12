@@ -369,6 +369,8 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
    ssize_t size1 = 0;
    ssize_t len1=0;
 
+   //do the following loop until size1 is large enough to fit the string, 
+   //target will contain the target of link 1
    do
    {
       free(target1);
@@ -378,6 +380,7 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
    }while((len1 == size1 -1));
    target1[len1] = '\0';
 
+   //If target 2 doesnt fit withing lenght1 ,then its not the same
    target2=CALL_OR_DIE(calloc(len1 + 1, sizeof(char)), "malloc error", char*, NULL);
    if(CALL_OR_DIE(readlink(path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
    {    
@@ -388,7 +391,7 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
    }
    target2[len1] = '\0';
 
-   //Check if both links , look to a link, and call the same function rec with the new paths
+   //Check if both links , look to a link, and call the same function recursively with the new paths
    if( (is_link_target_a_link(target1) == true) && (is_link_target_a_link(target2) == true)) 
    {
       char* tempname1=CALL_OR_DIE(calloc(256, sizeof(char)), "malloc error", char*, NULL);
@@ -411,6 +414,8 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
    char* tempname2=CALL_OR_DIE(calloc(256, sizeof(char)), "malloc error", char*, NULL);
    getLastPathComponent(target1, len1 + 1, tempname1, 256);
    getLastPathComponent(target2, len1 + 1, tempname2, 256);
+   //Check if the name of files that the links look to are the same, then call the 
+   //same file function to isnure that they are the considered the "same"
    if (strcmp(tempname1, tempname2) == 0) {    
       bool result= same_file(tempname1, target1, target2);
       free(tempname1);
@@ -450,6 +455,8 @@ bool same_link(char* name1, char* path1, char* path2)
    ssize_t size1 = 0;
    ssize_t len1=0;
 
+   //do the following loop until size1 is large enough to fit the string, 
+   //target will contain the target of link 1
    do
    {
       free(target1);
@@ -459,6 +466,7 @@ bool same_link(char* name1, char* path1, char* path2)
    }while((len1 == size1 -1));
 
    target1[len1] = '\0';
+   //If target 2 doesnt fit withing lenght1 ,then its not the same
    target2=CALL_OR_DIE(calloc(len1 + 1, sizeof(char)), "malloc error", char*, NULL);
    if(CALL_OR_DIE(readlink(real_path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
    {    
@@ -472,7 +480,7 @@ bool same_link(char* name1, char* path1, char* path2)
    target2[len1] = '\0';
    free(real_path1);
    free(real_path2);
-   //Check if both links , look to a link, and call the same function rec with the new paths
+   //Check if both links , look to a link, and call the same function recursively with the new paths
    if( (is_link_target_a_link(target1) == true) && (is_link_target_a_link(target2) == true)) 
    {
       char* tempname1=CALL_OR_DIE(calloc(256, sizeof(char)), "malloc error", char*, NULL);
@@ -499,8 +507,11 @@ bool same_link(char* name1, char* path1, char* path2)
    getLastPathComponent(target1, len1 + 1, tempname1, 256);
    getLastPathComponent(target2, len1 + 1, tempname2, 256);
   
+   //Check if the name of files that the links look to are the same, then call the 
+   //same file function to isnure that they are the considered the "same"
    if (strcmp(tempname1, tempname2) == 0) {      
-
+      
+      //remove the last component of the path so same file function works as intended
       removeLastComponent(target1);
       removeLastComponent(target2);
       bool result= same_file(tempname1, target1, target2);

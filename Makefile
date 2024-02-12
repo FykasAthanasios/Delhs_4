@@ -43,7 +43,7 @@ test_dir:
 	ln -s $(mypath)/dirA/B dirA/link3
 	ln -s $(mypath)/dirB/B dirB/link3
 	echo "hello" | cat >> dirA/B
-	echo "hello2" | cat >> dirB/B
+	echo "hello" | cat >> dirB/B
 	echo "hello world" | cat >> dirA/C.txt
 	echo "hello world" | cat >> dirB/C.txt
 	echo "i am A" | cat >> dirA/A
