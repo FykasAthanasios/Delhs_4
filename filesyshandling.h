@@ -39,6 +39,7 @@ bool same_dir(char* name1, char* name2);
 bool same_file(char* name, char* path1, char* path2);
 //check if file2 was modified later than file1
 bool file1_modif_less_file2_modif(char *name1, char *name2, char *path1, char *path2);
+//check if links with same name, are looking to the same files ( works for nested links)
 bool same_link(char* name1, char* path1, char* path2);
 
 

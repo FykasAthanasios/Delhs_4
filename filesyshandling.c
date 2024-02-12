@@ -356,7 +356,7 @@ void getLastPathComponent(const char* path, int length, char* lastComponent, int
    }
 }
 
-
+//same as same link function
 bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
 {
    if(strcmp(name1, name2) != 0)
@@ -439,6 +439,7 @@ void removeLastComponent(char *path) {
       }
    }
 }
+
 
 bool same_link(char* name1, char* path1, char* path2)
 {

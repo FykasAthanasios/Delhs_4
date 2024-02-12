@@ -34,35 +34,6 @@ case1:
 	touch dirB/dir2/myfile.c
 	touch dirB/dir1/A1
 	touch dirB/dir1/d11/d111/d1111/test.txt
-	ln dirA/C.txt dirA/hardlinkA
-	ln dirB/C.txt dirB/hardlinkA
- 
-case2:
-	mkdir dirA
-	touch dirA/A
-	touch dirA/B
-	mkdir dirA/dir1
-	mkdir dirA/dir2
-	mkdir dirA/dir3
-	touch dirA/C.txt
-	touch dirA/dir1/A1
-	mkdir dirA/dir2/dir21
-	mkdir dirA/dir2/dir22
-	touch dirA/dir2/dir22/file.csv
-	mkdir -p dirB/dir1/d11/d111/d1111
-	touch dirB/B
-	touch dirB/C.txt
-	mkdir dirB/dir2
-	mkdir dirB/dir2/d21
-	mkdir dirB/dir2/d22
-	touch dirB/dir2/d22/file.csv
-	touch dirB/dir2/myfile.c
-	touch dirB/dir1/A1
-	touch dirB/dir1/d11/d111/d1111/test.txt
-	echo "This is a new file" | cat >> dirA/C.txt
-	echo "This is a different file" | cat >> dirB/C.txt
-	ln dirA/C.txt dirA/hardlinkA
-	ln dirB/C.txt dirB/hardlinkA
 
 clear_test_dir:
 	rm -rf dirA
