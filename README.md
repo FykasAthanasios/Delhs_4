@@ -33,6 +33,7 @@ make clear_test_dir
     - Η print_differences_and_merge_rec κάνει DFS σε directories που υπάρχουν και στις δύο ιεραρχίες, μέχρι
     να βρει κάποιο που δεν είναι ίδιο καλώντας τότε την traverse differences
     - Η print_differences_and_merge κάνει αρχικοποίηση και καλεί την αναδρομική εκδοχή της δύο φορες, για να κάνει 2 φορές DFS
+    - Άμα δύο files έχουν διαφορετικό περιεχόμενο, ίδια ημερομηνία και ίδιο όνομα, θα φτιαχτεί αυτό που βρίσκεται στο πρώτο directory.
 
 Τέλος χρησιμοποιήσαμε το valgrind για τυχόν memory leaks.
 ```
