@@ -35,8 +35,9 @@ void copy_file_or_hard_link(char *path, char *new_path, i_node_node** table);
 void copy_link(char *path, char *new_path);
 
 bool same_dir(char* name1, char* name2);
-//compare files with the same name
+//check if the have the same size and content
 bool same_file(char* name, char* path1, char* path2);
+//check if file2 was modified later than file1
 bool file1_modif_less_file2_modif(char *name1, char *name2, char *path1, char *path2);
 bool same_link(char* name1, char* path1, char* path2);
 

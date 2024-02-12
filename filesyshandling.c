@@ -99,19 +99,24 @@ void copy_file_or_hard_link(char *path, char *new_path, i_node_node** table)
 {
    struct stat stat1;
    CALL_OR_DIE(stat(path, &stat1), "stat error", int, -1);
+   //check the file has more than one link
    if(stat1.st_nlink > 1)
    {
+      //check if the i node is inside the table
       char *original_new_path = get_path(stat1.st_ino, *table);
+      //if it is not put it there and copy the file
       if(original_new_path == NULL)
       {
          insert(stat1.st_ino, new_path, table);
          copy_file(path, new_path);
       }
+      //if it is not create a hard link to the file that was inserted inside the table
       else
       {
          CALL_OR_DIE(link(original_new_path, new_path), "link error", int, -1);
       }
    }
+   //if it only has 1 has link just copy the file
    else
    {
       copy_file(path, new_path);
@@ -124,12 +129,14 @@ typedef struct
    int end;
 }Points;
 
+//find the string inside the other string and return the index where it starts and where it ends
 Points find_string_in_string(const char* s, const char* string_to_find)
 {
    int len = strlen(string_to_find);
    Points p;
    for(int i = 0 ; s[i] != '\0' ; i++)
    {
+      //if you find the first character check if the the next characters are the same
       if(s[i] == string_to_find[0])
       {
          bool found = true;
@@ -149,6 +156,7 @@ Points find_string_in_string(const char* s, const char* string_to_find)
          }
       }
    }
+   //if the string is not found return -1
    return (Points){.start = -1, .end = -1};
 }
 
@@ -159,7 +167,7 @@ void copy_link(char *path, char *new_path)
    char result_parent_dir[256];
    char original_parent[256];
 
-   //find the origin parent directory and the destination parent directory to copy the link
+   //find the parents of the old path and the new path 
    int len1, len2;
    for(len1 = 0, len2 = 0; new_path[len1] != '/' &&  path[len2] != '/' ; len1++, len2++)
    {
@@ -188,7 +196,7 @@ void copy_link(char *path, char *new_path)
    char * target = NULL;
    ssize_t size = 0;
    ssize_t len = 0;
-
+   //find where the link is pointing
    do
    {
       free(target);
@@ -198,7 +206,7 @@ void copy_link(char *path, char *new_path)
    }while((len == size -1));
 
    target[len] = '\0';
-
+   //create a new path path for the link to point to by changing the path for example /home/dirA/dirRandom/link -> /home/dirC/dirRandom/link
    char *new_path_to_file = CALL_OR_DIE(malloc(((len + 1) - len2 + len1 + 1) * sizeof(char)), "malloc error", void *, NULL);
    Points p = find_string_in_string(target, original_parent);
 
@@ -212,7 +220,7 @@ void copy_link(char *path, char *new_path)
    strcat(new_path_to_file, (target + p.end + 1));
 
    free_path(target);
-
+   //create the soft link in the new path
    CALL_OR_DIE(symlink(new_path_to_file, new_path), "symlink error", int, -1);
    free_path(new_path_to_file);
 }
