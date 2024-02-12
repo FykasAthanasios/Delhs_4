@@ -505,10 +505,11 @@ bool same_link(char* name1, char* path1, char* path2)
       bool result= same_file(tempname1, target1, target2);
       free(tempname1);
       free(tempname2);
+      free(target1);
+      free(target2);
       if ( result == false)
       {    
-         free(target1);
-         free(target2);
+         
          return false;
       }
       return true; // The links point to the same target
