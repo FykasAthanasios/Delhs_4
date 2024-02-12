@@ -1,5 +1,4 @@
 #include "filesyshandling.h"
-#include "i_node_table.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -96,16 +95,16 @@ void copy_file(char *path, char *new_path)
    }
 }
 
-void copy_file_or_hard_link(char *path, char *new_path)
+void copy_file_or_hard_link(char *path, char *new_path, i_node_node** table)
 {
    struct stat stat1;
    CALL_OR_DIE(stat(path, &stat1), "stat error", int, -1);
    if(stat1.st_nlink > 1)
    {
-      char *original_new_path = get_path(stat1.st_ino);
+      char *original_new_path = get_path(stat1.st_ino, *table);
       if(original_new_path == NULL)
       {
-         insert(stat1.st_ino, new_path);
+         insert(stat1.st_ino, new_path, table);
          copy_file(path, new_path);
       }
       else

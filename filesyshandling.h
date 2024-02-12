@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 #include <sys/types.h>
+#include "i_node_table.h"
 
 #define CALL_OR_DIE(f_call, error_message, Type, error_value)      \
 ({                                                                 \
@@ -30,7 +31,7 @@ int my_mkdir(char *path, mode_t mode);
 
 int my_creat(char *path, mode_t mode);
 
-void copy_file_or_hard_link(char *path, char *new_path);
+void copy_file_or_hard_link(char *path, char *new_path, i_node_node** table);
 void copy_link(char *path, char *new_path);
 
 bool same_dir(char* name1, char* name2);

@@ -19,8 +19,11 @@ bool check_to_ignore_dir(char *name)
    return false;
 }
 
-
-void traverse_differences(char *path, char *result_parent)
+/*
+ *function call called when we are in a directory that exists only in one of the two file system tree we examine
+ *it prints all the object inside the file recursivly and adds them in the result dirctery if it is not NULL
+*/
+void traverse_differences(char *path, char *result_parent, i_node_node** table)
 {
    DIR* direct = CALL_OR_DIE(opendir(path), "opendir error", DIR*, NULL);
 
@@ -46,12 +49,12 @@ void traverse_differences(char *path, char *result_parent)
          CALL_OR_DIE(my_mkdir(new_result_path, S_IRWXU), new_result_path, int, -1);
 
          printf("\t%s\n", new_path);
-         traverse_differences(new_path, new_result_path);
+         traverse_differences(new_path, new_result_path, table);
       }
       else if(d->d_type == DT_REG)
       {
          new_result_path = add_to_path(result_parent, d->d_name, &result_path_len, new_result_path);
-         copy_file_or_hard_link(new_path, new_result_path);
+         copy_file_or_hard_link(new_path, new_result_path, table);
          printf("\t%s\n", new_path);
       }
       else if(d->d_type == DT_LNK)
@@ -73,7 +76,10 @@ void traverse_differences(char *path, char *result_parent)
 
 //if index is 0 it means we are traversing the first directory
 //if index is 1 , the second
-void print_differences_and_merge_rec(char **parent_dir, int index, char *result_parent)
+//traverse the first or the second file system tree and find and print the differences 
+//if result_parent is not NULL then merge the trees
+//if we need to merge we add the object that exists in both trees only 
+void print_differences_and_merge_rec(char **parent_dir, int index, char *result_parent, i_node_node** table)
 {
    int compare_index = 0;
    if(index == 0)
@@ -137,7 +143,7 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
                      CALL_OR_DIE(my_mkdir(new_result_path, S_IRWXU), new_result_path, int, -1);
                   }
 
-                  print_differences_and_merge_rec(new_parents_dir ,index, new_result_path);
+                  print_differences_and_merge_rec(new_parents_dir ,index, new_result_path, table);
 
                   free_path(new_parents_dir[index]);
                   free_path(new_parents_dir[compare_index]);
@@ -180,7 +186,7 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
       {
          if(d1->d_type == DT_REG)
          {
-            copy_file_or_hard_link(path_to_file, new_result_path);
+            copy_file_or_hard_link(path_to_file, new_result_path, &table[index]);
          }
          else if(d1->d_type == DT_DIR)
          {
@@ -197,7 +203,7 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
          printf("\t%s\n", path_to_file);
          if(d1->d_type == DT_DIR)
          {
-            traverse_differences(path_to_file, new_result_path);
+            traverse_differences(path_to_file, new_result_path, &table[index]);
          }
       }
 
@@ -222,17 +228,18 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
 
 void print_differences_and_merge(char *parent1_dir, char *parent2_dir, char *result_parent)
 {
-   create_table();
+   i_node_node* table[2] = {create_table(), create_table()};
 
    CALL_OR_DIE(my_mkdir(result_parent, S_IRWXU), "mkdir error", int, -1);
 
    char *parents_dir[2] = {parent1_dir, parent2_dir};
 
    printf("In %s :\n", parents_dir[0]);
-   print_differences_and_merge_rec(parents_dir, 0, result_parent);
+   print_differences_and_merge_rec(parents_dir, 0, result_parent, table);
 
    printf("In %s :\n", parents_dir[1]);
-   print_differences_and_merge_rec(parents_dir, 1, result_parent);
+   print_differences_and_merge_rec(parents_dir, 1, result_parent, table);
 
-   delete_table();
+   delete_table(table[0]);
+   delete_table(table[1]);
 }

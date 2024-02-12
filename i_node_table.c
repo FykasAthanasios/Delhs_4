@@ -12,24 +12,22 @@
    value;                                                          \
 })
 
-static i_node_node *head;
-
-void create_table()
+i_node_node* create_table()
 {
-   head = NULL;
+   return NULL;
 }
 
-void insert(int i_node, char* path)
+void insert(int i_node, char* path, i_node_node** head)
 {
-   i_node_node *temp = CALL_OR_DIE(malloc(sizeof(i_node_node)), "malloc error", void *, NULL);
-   temp->i_node = i_node;
-   temp->path = CALL_OR_DIE(malloc(sizeof(char) * (strlen(path) + 1)), "malloc error", void *, NULL);
-   strcpy(temp->path, path);
-   temp->next = head;
-   head = temp;
+   i_node_node *temp = (*head);
+   (*head) = CALL_OR_DIE(malloc(sizeof(i_node_node)), "malloc error", void *, NULL);
+   (*head)->i_node = i_node;
+   (*head)->path = CALL_OR_DIE(malloc(sizeof(char) * (strlen(path) + 1)), "malloc error", void *, NULL);
+   strcpy((*head)->path, path);
+   (*head)->next = temp;
 }
 
-void delete_table()
+void delete_table(i_node_node* head)
 {
    i_node_node *temp = NULL;
    if(head != NULL)
@@ -47,7 +45,7 @@ void delete_table()
    }
 }
 
-char *get_path(int i_node)
+char *get_path(int i_node, i_node_node* head)
 {
    i_node_node *temp = head;
 
