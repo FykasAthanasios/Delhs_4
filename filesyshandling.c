@@ -325,29 +325,34 @@ bool is_link_target_a_link(const char* path)
    }
 }
 
-void getLastPathComponent(const char* path, char* lastComponent, int bufSize) {
-   if (path == NULL || lastComponent == NULL || bufSize == 0) {
+void getLastPathComponent(const char* path, int length, char* lastComponent, int bufSize) {
+   if (bufSize == 0) {
       return;
    }
-   int length = strlen(path);
+
    if (length == 0) {
-      strncpy(lastComponent, "", bufSize);
+      strcpy(lastComponent, "");
       return;
    }
-   //move the pointer to the last character
-   const char* p = path + length - 1;
-
-   //Find the start of the last component of the path
-   const char* end = p;
-   while (p > path && *(p - 1) != '/') {
-      --p;
+   
+   int slash_index = 0;
+   for(int i = length - 1; i >= 0 ; i--)
+   {
+      if(path[i] == '/')
+      {
+         slash_index = i;
+         break;
+      }
    }
 
-   int lastLen = end - p + 1;
-
-   if (lastLen < bufSize) {
-      memcpy(lastComponent, p, lastLen);
-      lastComponent[lastLen] = '\0';
+   for(int i = slash_index + 1, j = 0 ; i < length ; i++, j++)
+   {
+      if(j >= bufSize)
+      {
+         printf("out of bounds error\n");
+         exit(EXIT_FAILURE);
+      }
+      lastComponent[j] = path[i];
    }
 }
 
@@ -368,13 +373,12 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
    {
       free(target1);
       size1 +=64;
-      target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
+      target1=CALL_OR_DIE(calloc(size1, sizeof(char)), "malloc error", char*, NULL);
       len1=CALL_OR_DIE(readlink(path1, target1, size1-1), "readlink error", ssize_t, -1);
    }while((len1 == size1 -1));
-
    target1[len1] = '\0';
 
-   target2=CALL_OR_DIE(malloc(sizeof(char)*(len1+1)), "malloc error" , void*, NULL);
+   target2=CALL_OR_DIE(calloc(len1 + 1, sizeof(char)), "malloc error", char*, NULL);
    if(CALL_OR_DIE(readlink(path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
    {    
       target2[len1] = '\0';
@@ -387,10 +391,10 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
    //Check if both links , look to a link, and call the same function rec with the new paths
    if( (is_link_target_a_link(target1) == true) && (is_link_target_a_link(target2) == true)) 
    {
-      char* tempname1=malloc(sizeof(char)*20);
-      char* tempname2=malloc(sizeof(char)*20);
-      getLastPathComponent(target1, tempname1, 20);
-      getLastPathComponent(target2, tempname2, 20);
+      char* tempname1=CALL_OR_DIE(calloc(256, sizeof(char)), "malloc error", char*, NULL);
+      char* tempname2=CALL_OR_DIE(calloc(256, sizeof(char)), "malloc error", char*, NULL);
+      getLastPathComponent(target1, len1 + 1, tempname1, 256);
+      getLastPathComponent(target2, len1 + 1, tempname2, 256);
       if(same_link_rec( tempname1 , tempname2, target1, target2) == true) 
       {
          free(tempname1);
@@ -403,10 +407,10 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
       free(tempname2);
    }
    
-   char* tempname1=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
-   char* tempname2=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
-   getLastPathComponent(target1, tempname1, 20);
-   getLastPathComponent(target2, tempname2, 20);
+   char* tempname1=CALL_OR_DIE(calloc(256, sizeof(char)), "malloc error", char*, NULL);
+   char* tempname2=CALL_OR_DIE(calloc(256, sizeof(char)), "malloc error", char*, NULL);
+   getLastPathComponent(target1, len1 + 1, tempname1, 256);
+   getLastPathComponent(target2, len1 + 1, tempname2, 256);
    if (strcmp(tempname1, tempname2) == 0) {    
       bool result= same_file(tempname1, target1, target2);
       free(tempname1);
@@ -449,12 +453,12 @@ bool same_link(char* name1, char* path1, char* path2)
    {
       free(target1);
       size1 +=64;
-      target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
+      target1=CALL_OR_DIE(calloc(size1, sizeof(char)), "malloc error", char*, NULL);
       len1=CALL_OR_DIE(readlink(real_path1, target1, size1-1), "readlink error", ssize_t, -1);
    }while((len1 == size1 -1));
 
    target1[len1] = '\0';
-   target2=CALL_OR_DIE(malloc(sizeof(char)*(len1+1)), "malloc error" , void*, NULL);
+   target2=CALL_OR_DIE(calloc(len1 + 1, sizeof(char)), "malloc error", char*, NULL);
    if(CALL_OR_DIE(readlink(real_path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
    {    
       target2[len1] = '\0';
@@ -470,10 +474,10 @@ bool same_link(char* name1, char* path1, char* path2)
    //Check if both links , look to a link, and call the same function rec with the new paths
    if( (is_link_target_a_link(target1) == true) && (is_link_target_a_link(target2) == true)) 
    {
-      char* tempname1=malloc(sizeof(char)*20);
-      char* tempname2=malloc(sizeof(char)*20);
-      getLastPathComponent(target1, tempname1, 20);
-      getLastPathComponent(target2, tempname2, 20);
+      char* tempname1=CALL_OR_DIE(calloc(256, sizeof(char)), "malloc error", char*, NULL);
+      char* tempname2=CALL_OR_DIE(calloc(256, sizeof(char)), "malloc error", char*, NULL);
+      getLastPathComponent(target1, len1 + 1, tempname1, 256);
+      getLastPathComponent(target2, len1 + 1, tempname2, 256);
       if(same_link_rec( tempname1 , tempname2, target1, target2) == true) 
       {
          free(tempname1);
@@ -489,10 +493,10 @@ bool same_link(char* name1, char* path1, char* path2)
       return false;
 
    }
-   char* tempname1=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
-   char* tempname2=CALL_OR_DIE(malloc(sizeof(char)*20), "malloc error", void* , NULL);
-   getLastPathComponent(target1, tempname1, 20);
-   getLastPathComponent(target2, tempname2, 20);
+   char* tempname1=CALL_OR_DIE(calloc(256, sizeof(char)), "malloc error", char*, NULL);
+   char* tempname2=CALL_OR_DIE(calloc(256, sizeof(char)), "malloc error", char*, NULL);
+   getLastPathComponent(target1, len1 + 1, tempname1, 256);
+   getLastPathComponent(target2, len1 + 1, tempname2, 256);
   
    if (strcmp(tempname1, tempname2) == 0) {      
 
