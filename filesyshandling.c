@@ -99,6 +99,7 @@ void copy_file(char *path, char *new_path)
 void copy_file_or_hard_link(char *path, char *new_path, i_node_node** table)
 {
    struct stat stat1;
+
    CALL_OR_DIE(stat(path, &stat1), "stat error", int, -1);
    //check the file has more than one link
    if(stat1.st_nlink > 1)
@@ -294,7 +295,7 @@ bool same_file(char* name, char* path1, char* path2)
    return true;
 }
 
-bool file1_modif_less_file2_modif(char *name1, char *name2, char *path1, char *path2)
+int compare_file1_modif_with_file2_modif(char *name1, char *name2, char *path1, char *path2)
 {
    char *real_path1 = add_to_path(path1, name1, NULL, NULL);
    char *real_path2 = add_to_path(path2, name2, NULL, NULL);
@@ -304,7 +305,15 @@ bool file1_modif_less_file2_modif(char *name1, char *name2, char *path1, char *p
    CALL_OR_DIE(stat(real_path1, &stat1), "stat error", int, -1);
    CALL_OR_DIE(stat(real_path2, &stat2), "stat error", int, -1);
 
-   bool result = !(stat1.st_mtime >= stat2.st_mtime);
+   int result = 0;
+   if(stat1.st_mtime == stat2.st_mtime)
+   {
+      result = 1;
+   }
+   else if(stat1.st_mtime < stat2.st_mtime)
+   {
+      result = 2;
+   }
 
    free(real_path1);
    free(real_path2);
@@ -353,6 +362,17 @@ void getLastPathComponent(const char* path, int length, char* lastComponent, int
          exit(EXIT_FAILURE);
       }
       lastComponent[j] = path[i];
+   }
+}
+
+void removeLastComponent(char *path) {
+   int len = strlen(path);
+
+   for (int i = len - 1; i >= 0; i--) {
+      if (path[i] == '/' || path[i] == '\\') { 
+         path[i] = '\0';
+         break;
+      }
    }
 }
 
@@ -417,6 +437,8 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
    //Check if the name of files that the links look to are the same, then call the 
    //same file function to isnure that they are the considered the "same"
    if (strcmp(tempname1, tempname2) == 0) {    
+      removeLastComponent(target1);
+      removeLastComponent(target2);
       bool result= same_file(tempname1, target1, target2);
       free(tempname1);
       free(tempname2);
@@ -433,18 +455,6 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
       return false; // The links do not point to the same target
    }
 } 
-
-void removeLastComponent(char *path) {
-   int len = strlen(path);
-
-   for (int i = len - 1; i >= 0; i--) {
-      if (path[i] == '/' || path[i] == '\\') { 
-         path[i] = '\0';
-         break;
-      }
-   }
-}
-
 
 bool same_link(char* name1, char* path1, char* path2)
 {

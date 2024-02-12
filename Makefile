@@ -43,7 +43,6 @@ test_dir:
 	ln -s $(mypath)/dirA/B dirA/link3
 	ln -s $(mypath)/dirB/B dirB/link3
 	echo "hello" | cat >> dirA/B
-	echo "hello" | cat >> dirB/B
 	echo "hello world" | cat >> dirA/C.txt
 	echo "hello world" | cat >> dirB/C.txt
 	echo "i am A" | cat >> dirA/A
@@ -52,6 +51,8 @@ test_dir:
 	ln $(mypath)/dirA/C.txt dirA/common_hard_link
 	ln $(mypath)/dirB/C.txt dirB/common_hard_link
 	ln $(mypath)/dirA/A dirA/dir3/hard_link
+	sleep 1
+	echo "hello2" | cat >> dirB/B
 	
 
 clear_test_dir:

@@ -128,10 +128,17 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
                      break;
                   }
                   //if they have the same name but they are not the same file we need when it was last modified
-                  else if(file1_modif_less_file2_modif(d1->d_name, d2->d_name, parent_dir[index], parent_dir[compare_index]))
+                  else
                   {
-                     //if it was modified before the other file then dont copy it
-                     copy = false;
+                     int result = compare_file1_modif_with_file2_modif(d1->d_name, d2->d_name, parent_dir[index], parent_dir[compare_index]);
+                     if(result == 1 && index == 1)
+                     {
+                        copy = false;
+                     }
+                     else if(result == 2)
+                     {
+                        copy = false;
+                     }                 
                   }
                }
             }
@@ -180,9 +187,17 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
                      found = true;
                      break;
                   }
-                  else if(file1_modif_less_file2_modif(d1->d_name, d2->d_name, parent_dir[index], parent_dir[compare_index]))
+                  else
                   {
-                     copy = false;
+                     int result = compare_file1_modif_with_file2_modif(d1->d_name, d2->d_name, parent_dir[index], parent_dir[compare_index]);
+                     if(result == 1 && index == 1)
+                     {
+                        copy = false;
+                     }
+                     else if(result == 2)
+                     {
+                        copy = false;
+                     }   
                   }
                }
             }
