@@ -399,19 +399,20 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
       target1=CALL_OR_DIE(calloc(size1, sizeof(char)), "malloc error", char*, NULL);
       len1=CALL_OR_DIE(readlink(path1, target1, size1-1), "readlink error", ssize_t, -1);
    }while((len1 == size1 -1));
-   target1[len1] = '\0';
 
+   target1[len1] = '\0';
    //If target 2 doesnt fit withing lenght1 ,then its not the same
    target2=CALL_OR_DIE(calloc(len1 + 1, sizeof(char)), "malloc error", char*, NULL);
    if(CALL_OR_DIE(readlink(path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
    {    
       target2[len1] = '\0';
-      free(target1);
-      free(target2);
+      free_path(target1);
+      free_path(target2);
+      free_path(path1);
+      free_path(path2);
       return false;
    }
    target2[len1] = '\0';
-
    //Check if both links , look to a link, and call the same function recursively with the new paths
    if( (is_link_target_a_link(target1) == true) && (is_link_target_a_link(target2) == true)) 
    {
@@ -421,41 +422,46 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
       getLastPathComponent(target2, len1 + 1, tempname2, 256);
       if(same_link_rec( tempname1 , tempname2, target1, target2) == true) 
       {
-         free(tempname1);
-         free(tempname2);
-         free(target1);
-         free(target2);
+         free_path(tempname1);
+         free_path(tempname2);
+         free_path(target1);
+         free_path(target2);
          return true;
       }
-      free(tempname1);
-      free(tempname2);
+      free_path(tempname1);
+      free_path(tempname2);
    }
-   
    char* tempname1=CALL_OR_DIE(calloc(256, sizeof(char)), "malloc error", char*, NULL);
    char* tempname2=CALL_OR_DIE(calloc(256, sizeof(char)), "malloc error", char*, NULL);
    getLastPathComponent(target1, len1 + 1, tempname1, 256);
    getLastPathComponent(target2, len1 + 1, tempname2, 256);
+  
    //Check if the name of files that the links look to are the same, then call the 
    //same file function to isnure that they are the considered the "same"
-   if (strcmp(tempname1, tempname2) == 0) {    
+   if (strcmp(tempname1, tempname2) == 0) {      
+      
+      //remove the last component of the path so same file function works as intended
       removeLastComponent(target1);
       removeLastComponent(target2);
       bool result= same_file(tempname1, target1, target2);
-      free(tempname1);
-      free(tempname2);
+      free_path(tempname1);
+      free_path(tempname2);
+      free_path(target1);
+      free_path(target2);
       if ( result == false)
-      {
+      {    
+         
          return false;
       }
       return true; // The links point to the same target
    } else {
-      free(target1);
-      free(target2);
-      free(tempname1);
-      free(tempname2);
+      free_path(target1);
+      free_path(target2);
+      free_path(tempname1);
+      free_path(tempname2);
       return false; // The links do not point to the same target
    }
-} 
+}  
 
 bool same_link(char* name1, char* path1, char* path2)
 {
@@ -470,7 +476,7 @@ bool same_link(char* name1, char* path1, char* path2)
    //target will contain the target of link 1
    do
    {
-      free(target1);
+      free_path(target1);
       size1 +=64;
       target1=CALL_OR_DIE(calloc(size1, sizeof(char)), "malloc error", char*, NULL);
       len1=CALL_OR_DIE(readlink(real_path1, target1, size1-1), "readlink error", ssize_t, -1);
@@ -482,15 +488,15 @@ bool same_link(char* name1, char* path1, char* path2)
    if(CALL_OR_DIE(readlink(real_path2, target2, len1+1), "readlink error" , ssize_t , -1)== len1+1)
    {    
       target2[len1] = '\0';
-      free(target1);
-      free(target2);
-      free(real_path1);
-      free(real_path2);
+      free_path(target1);
+      free_path(target2);
+      free_path(real_path1);
+      free_path(real_path2);
       return false;
    }
    target2[len1] = '\0';
-   free(real_path1);
-   free(real_path2);
+   free_path(real_path1);
+   free_path(real_path2);
    //Check if both links , look to a link, and call the same function recursively with the new paths
    if( (is_link_target_a_link(target1) == true) && (is_link_target_a_link(target2) == true)) 
    {
@@ -500,16 +506,16 @@ bool same_link(char* name1, char* path1, char* path2)
       getLastPathComponent(target2, len1 + 1, tempname2, 256);
       if(same_link_rec( tempname1 , tempname2, target1, target2) == true) 
       {
-         free(tempname1);
-         free(tempname2);
-         free(target1);
-         free(target2);
+         free_path(tempname1);
+         free_path(tempname2);
+         free_path(target1);
+         free_path(target2);
          return true;
       }
-      free(tempname1);
-      free(tempname2);
-      free(target1);
-      free(target2);
+      free_path(tempname1);
+      free_path(tempname2);
+      free_path(target1);
+      free_path(target2);
       return false;
 
    }
@@ -526,10 +532,10 @@ bool same_link(char* name1, char* path1, char* path2)
       removeLastComponent(target1);
       removeLastComponent(target2);
       bool result= same_file(tempname1, target1, target2);
-      free(tempname1);
-      free(tempname2);
-      free(target1);
-      free(target2);
+      free_path(tempname1);
+      free_path(tempname2);
+      free_path(target1);
+      free_path(target2);
       if ( result == false)
       {    
          
@@ -537,10 +543,10 @@ bool same_link(char* name1, char* path1, char* path2)
       }
       return true; // The links point to the same target
    } else {
-      free(target1);
-      free(target2);
-      free(tempname1);
-      free(tempname2);
+      free_path(target1);
+      free_path(target2);
+      free_path(tempname1);
+      free_path(tempname2);
       return false; // The links do not point to the same target
    }
 } 
