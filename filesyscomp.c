@@ -189,7 +189,7 @@ void print_differences_and_merge_rec(char **parent_dir, int index, char *result_
                   }
                   else
                   {
-                     int result = compare_file1_modif_with_file2_modif(d1->d_name, d2->d_name, parent_dir[index], parent_dir[compare_index]);
+                     int result = compare_link1_modif_with_link2_modif(d1->d_name, d2->d_name, parent_dir[index], parent_dir[compare_index]);
                      if(result == 1 && index == 1)
                      {
                         copy = false;

@@ -322,10 +322,10 @@ int compare_file1_modif_with_file2_modif(char *name1, char *name2, char *path1, 
    return result;
 }
 
-int compare_link1_modif_with_link2_modif(char* name1, char * name2, char* path1, char *path2)
+int compare_link1_modif_with_link2_modif(char *name1, char *name2, char *path1, char *path2)
 {
-   char* real_path1 = add_to_path(path1, name1, NULL, NULL);
-   char* real_path2 = add_to_path(path2, name2, NULL, NULL);
+   char *real_path1 = add_to_path(path1, name1, NULL, NULL);
+   char *real_path2 = add_to_path(path2, name2, NULL, NULL);
 
    struct stat stat1, stat2;
 

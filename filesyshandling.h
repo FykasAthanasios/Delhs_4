@@ -40,6 +40,7 @@ bool same_file(char* name, char* path1, char* path2);
 //compare fil1 modified time with file modified time , if file1 is modifed after file2 then it return 0 , if they are the same it return 1 and 
 //if file2 modifed after file1 it return 2
 int compare_file1_modif_with_file2_modif(char *name1, char *name2, char *path1, char *path2);
+int compare_link1_modif_with_link2_modif(char *name1, char *name2, char *path1, char *path2);
 //check if links with same name, are looking to the same files ( works for nested links)
 bool same_link(char* name1, char* path1, char* path2);
 
