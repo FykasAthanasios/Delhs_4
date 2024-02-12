@@ -65,17 +65,17 @@ clear_test_dir:
 	rm -rf dirA
 	rm -rf dirB
 
-test:
-	$(CC) $(Flags) -g filesyshandling.c test.c -o test
-
 .obj_dir:
 	mkdir -p obj
 
 .main: .filesyscomp.o
 	$(CC) $(Flags) obj/*.o main.c -o cmpcat
 
-.filesyshandling.o: filesyshandling.h filesyshandling.c
+.filesyshandling.o: filesyshandling.h filesyshandling.c .i_node_table.o
 	$(CC) $(Flags) -c filesyshandling.c -o obj/filesyshandling.o
 
-.filesyscomp.o: filesyscomp.h filesyscomp.c .filesyshandling.o
+.filesyscomp.o: filesyscomp.h filesyscomp.c .filesyshandling.o .i_node_table.o
 	$(CC) $(Flags) -c filesyscomp.c -o obj/filesyscomp.o
+
+.i_node_table.o: i_node_table.h i_node_table.c
+	$(CC) $(Flags) -c i_node_table.c -o obj/i_node_table.o

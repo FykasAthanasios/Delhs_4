@@ -1,0 +1,19 @@
+#ifndef I_NODE_TABLE_H
+#define I_NODE_TABLE_H
+
+#include <stdbool.h>
+
+typedef struct st
+{
+   int i_node;
+   char *path;
+   struct st *next;
+}i_node_node;
+
+//return NULL if does not exists
+char *get_path(int i_node);
+void insert(int i_node, char* path);
+void create_table();
+void delete_table();
+
+#endif

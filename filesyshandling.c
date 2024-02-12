@@ -1,4 +1,5 @@
 #include "filesyshandling.h"
+#include "i_node_table.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -97,7 +98,25 @@ void copy_file(char *path, char *new_path)
 
 void copy_file_or_hard_link(char *path, char *new_path)
 {
-   copy_file(path, new_path);
+   struct stat stat1;
+   CALL_OR_DIE(stat(path, &stat1), "stat error", int, -1);
+   if(stat1.st_nlink > 1)
+   {
+      char *original_new_path = get_path(stat1.st_ino);
+      if(original_new_path == NULL)
+      {
+         insert(stat1.st_ino, new_path);
+         copy_file(path, new_path);
+      }
+      else
+      {
+         CALL_OR_DIE(link(original_new_path, new_path), "link error", int, -1);
+      }
+   }
+   else
+   {
+      copy_file(path, new_path);
+   }
 }
 
 typedef struct
@@ -174,7 +193,7 @@ void copy_link(char *path, char *new_path)
    do
    {
       free(target);
-      size += 1024;
+      size += 64;
       target = CALL_OR_DIE(malloc(size * sizeof(char)), "malloc error", char*, NULL);
       len = CALL_OR_DIE(readlink(path, target, size - 1), "readlink error", ssize_t, -1);
    }while((len == size -1));
@@ -340,7 +359,7 @@ bool same_link_rec(char* name1, char* name2, char* path1, char* path2)
    do
    {
       free(target1);
-      size1 +=1024;
+      size1 +=64;
       target1=CALL_OR_DIE(malloc(size1*sizeof(char)), "malloc error", char*, NULL);
       len1=CALL_OR_DIE(readlink(path1, target1, size1-1), "readlink error", ssize_t, -1);
    }while((len1 == size1 -1));
