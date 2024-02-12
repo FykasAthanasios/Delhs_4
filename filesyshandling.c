@@ -98,6 +98,7 @@ void copy_file(char *path, char *new_path)
 
 void copy_file_or_hard_link(char *path, char *new_path, i_node_node** table)
 {
+   if(new_path == NULL) return;
    struct stat stat1;
 
    CALL_OR_DIE(stat(path, &stat1), "stat error", int, -1);
