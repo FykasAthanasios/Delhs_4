@@ -1,11 +1,11 @@
 CC = gcc
 Flags = -std=c11 -Wall
 
-run : target
+target: .obj_dir .main
+
+run :
 	rm -rf dirC
 	./cmpcat -d dirA dirB -s dirC
-
-target: .obj_dir .main
 
 clear:
 	rm -rf obj
@@ -71,7 +71,7 @@ clear_test_dir:
 .obj_dir:
 	mkdir -p obj
 
-.main: .filesyscomp.o
+.main: .filesyscomp.o main.c
 	$(CC) $(Flags) obj/*.o main.c -o cmpcat
 
 .filesyshandling.o: filesyshandling.h filesyshandling.c .i_node_table.o
